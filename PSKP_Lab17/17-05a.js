@@ -11,13 +11,14 @@ client.on('end', () => console.log('Client disconnected.\n'));
 (async () => {
     const clientClone = client.duplicate();
     await clientClone.connect();
+    console.log();
 
     await clientClone.pSubscribe('*', (msg, channel) => {
         console.log(`${channel} sent: ${msg}`);
     }, true);
 
     setTimeout(async () => {
-        await clientClone.unsubscribe();
+        await clientClone.pUnsubscribe();
         await clientClone.quit();
-    }, 2000);
+    }, 6000);
 })()

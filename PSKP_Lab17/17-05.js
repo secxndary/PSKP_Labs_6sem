@@ -17,10 +17,10 @@ client.on('end', () => console.log('Client disconnected.\n'));
 
     setInterval(async () => {
         await client.publish('Novoe radio', 'Skrillex – Drop the Bass');
-    }, 2000)
+    }, 1500)
         .unref();
 
     setTimeout(async () => {
         await client.quit();
-    }, 5000);
+    }, 9000);
 })();
