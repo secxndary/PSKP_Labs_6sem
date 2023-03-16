@@ -31,6 +31,13 @@ app.post(prefix + '/faculties', (req, res) => { service.insertFaculty(res, req.b
     .post(prefix + '/auditoriumstypes', (req, res) => { service.insertAuditoriumType(res, req.body); })
     .post(prefix + '/auditoriums', (req, res) => { service.insertAuditorium(res, req.body); });
 
+app.put(prefix + '/faculties', (req, res) => { service.updateFaculty(res, req.body); })
+    .put(prefix + '/pulpits', (req, res) => { service.updatePulpit(res, req.body); })
+    .put(prefix + '/teachers', (req, res) => { service.updateTeacher(res, req.body); })
+    .put(prefix + '/subjects', (req, res) => { service.updateSubject(res, req.body); })
+    .put(prefix + '/auditoriumstypes', (req, res) => { service.updateAuditoriumType(res, req.body); })
+    .put(prefix + '/auditoriums', (req, res) => { service.updateAuditorium(res, req.body); });
+
 app.delete(prefix + '/faculties/:faculty', (req, res) => { service.deleteFaculty(res, req.params['faculty']); })
     .delete(prefix + '/pulpits/:pulpit', (req, res) => { service.deletePulpit(res, req.params['pulpit']); })
     .delete(prefix + '/subjects/:subject', (req, res) => { service.deleteSubject(res, req.params['subject']); })
@@ -41,7 +48,7 @@ app.delete(prefix + '/faculties/:faculty', (req, res) => { service.deleteFaculty
 
 
 
-
+    
 
 sequelize.authenticate()
     .then(() => { console.log('[OK] Connected to database.\n'); })          // sequelize.close();
