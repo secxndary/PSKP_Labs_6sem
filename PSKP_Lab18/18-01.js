@@ -1,14 +1,17 @@
-const Sequelize = require('sequelize');
+import { Sequelize } from 'sequelize';
+import {
+    faculty,
+    pulpit,
+    subject,
+    teacher,
+    auditorium_type,
+    auditorium
+} from './models/models.js';
 const sequelize = new Sequelize('sequel', 'postgres', '1111', {
     host: 'localhost',
     dialect: 'postgres',
     define: { timestamps: false }
 });
-const faculty = require('./models/faculty');
-const pulpit = require('./models/pulpit');
-const teacher = require('./models/teacher');
-const auditorium_type = require('./models/auditorium_type');
-const auditorium = require('./models/auditorium');
 
 
 
