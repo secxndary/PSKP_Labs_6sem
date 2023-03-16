@@ -12,7 +12,7 @@ const sequelize = new Sequelize('sequel', 'postgres', '1111', {
 export default class SequelizeService {
 
 
-    // =====================================  GET  =====================================
+    // ========================================  GET  ========================================
 
     getFaculties = async res => {
         await faculty.findAll().then(items => { res.send(JSON.stringify(items, null, 4)); });
@@ -37,6 +37,50 @@ export default class SequelizeService {
     getAuditoriums = async res => {
         await auditorium.findAll().then(items => { res.send(JSON.stringify(items, null, 4)); });
     }
+
+
+
+
+    // =============================  INSERT  ==============================
+
+    insertFaculty = async (res, dto) => {
+        try { res.json(await faculty.create(dto)); }
+        catch (err) { this.sendJsonError(res, err); }
+    }
+
+    insertPulpit = async (res, dto) => {
+        try { res.json(await pulpit.create(dto)); }
+        catch (err) { this.sendJsonError(res, err); }
+    }
+
+    insertSubject = async (res, dto) => {
+        try { res.json(await subject.create(dto)); }
+        catch (err) { this.sendJsonError(res, err); }
+    }
+
+    insertTeacher = async (res, dto) => {
+        try { res.json(await teacher.create(dto)); }
+        catch (err) { this.sendJsonError(res, err); }
+    }
+
+    insertAuditoriumType = async (res, dto) => {
+        try { res.json(await auditorium_type.create(dto)); }
+        catch (err) { this.sendJsonError(res, err); }
+    }
+
+    insertAuditorium = async (res, dto) => {
+        try { res.json(await auditorium.create(dto)); }
+        catch (err) { this.sendJsonError(res, err); }
+    }
+
+
+
+
+
+
+
+
+
 
 
 
@@ -95,5 +139,12 @@ export default class SequelizeService {
                 else
                     res.send(JSON.stringify(auditoriumToDelete, null, 4));
             });
+    }
+
+
+
+
+    sendJsonError = async (res, err) => {
+        res.json({ code: err.original.code, name: err.name, detail: err.original.detail, message: err.message });
     }
 }

@@ -1,7 +1,6 @@
 import { Sequelize } from 'sequelize';
 import express from 'express';
 import SequelizeService from './services.js';
-import { faculty, pulpit, subject, teacher, auditorium_type, auditorium } from './models/models.js';
 
 const __dirname = 'C:\\Users\\valda\\source\\repos\\semester#6\\ПСКП\\PSKP_Lab18\\static\\';
 const prefix = '/api';
@@ -15,7 +14,7 @@ const sequelize = new Sequelize('sequel', 'postgres', '1111', {
 
 
 
-
+app.use(express.json());
 app.get('/', (req, res) => { res.sendFile(__dirname + 'index.html'); });
 
 app.get(prefix + '/faculties', (req, res) => { service.getFaculties(res); })
@@ -24,6 +23,13 @@ app.get(prefix + '/faculties', (req, res) => { service.getFaculties(res); })
     .get(prefix + '/subjects', (req, res) => { service.getSubjects(res); })
     .get(prefix + '/auditoriumstypes', (req, res) => { service.getAuditoriumTypes(res); })
     .get(prefix + '/auditoriums', (req, res) => { service.getAuditoriums(res); });
+
+app.post(prefix + '/faculties', (req, res) => { service.insertFaculty(res, req.body); })
+    .post(prefix + '/pulpits', (req, res) => { service.insertPulpit(res, req.body); })
+    .post(prefix + '/teachers', (req, res) => { service.insertTeacher(res, req.body); })
+    .post(prefix + '/subjects', (req, res) => { service.insertSubject(res, req.body); })
+    .post(prefix + '/auditoriumstypes', (req, res) => { service.insertAuditoriumType(res, req.body); })
+    .post(prefix + '/auditoriums', (req, res) => { service.insertAuditorium(res, req.body); });
 
 app.delete(prefix + '/faculties/:faculty', (req, res) => { service.deleteFaculty(res, req.params['faculty']); })
     .delete(prefix + '/pulpits/:pulpit', (req, res) => { service.deletePulpit(res, req.params['pulpit']); })
@@ -38,16 +44,7 @@ app.delete(prefix + '/faculties/:faculty', (req, res) => { service.deleteFaculty
 
 
 sequelize.authenticate()
-    .then(() => {
-        console.log('[OK] Connected to database.\n');
-        // faculty.findAll().then(items => { console.log(JSON.stringify(items, null, 4)); });
-        // pulpit.findAll().then(items => { console.log(JSON.stringify(items, null, 4)); });
-        // teacher.findAll().then(items => { console.log(JSON.stringify(items, null, 4)); });
-        // subject.findAll().then(items => { console.log(JSON.stringify(items, null, 4)); });
-        // auditorium_type.findAll().then(items => { console.log(JSON.stringify(items, null, 4)); });
-        // auditorium.findAll().then(items => { console.log(JSON.stringify(items, null, 4)); });
-        // sequelize.close();
-    })
+    .then(() => { console.log('[OK] Connected to database.\n'); })          // sequelize.close();
     .catch(err => { console.log('[ERROR] Sequelize: ', err); });
 
 
