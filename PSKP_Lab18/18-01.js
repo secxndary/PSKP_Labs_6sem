@@ -9,7 +9,13 @@ const service = new SequelizeService;
 const sequelize = new Sequelize('sequel', 'postgres', '1111', {
     host: 'localhost',
     dialect: 'postgres',
-    define: { timestamps: false }
+    define: { timestamps: false },
+    pool: {
+        max: 5,
+        min: 1,
+        acquire: 30000,
+        idle: 10000
+    }
 });
 
 
@@ -22,7 +28,9 @@ app.get(prefix + '/faculties', (req, res) => { service.getFaculties(res); })
     .get(prefix + '/teachers', (req, res) => { service.getTeachers(res); })
     .get(prefix + '/subjects', (req, res) => { service.getSubjects(res); })
     .get(prefix + '/auditoriumstypes', (req, res) => { service.getAuditoriumTypes(res); })
-    .get(prefix + '/auditoriums', (req, res) => { service.getAuditoriums(res); });
+    .get(prefix + '/auditoriums', (req, res) => { service.getAuditoriums(res); })
+    .get(prefix + '/faculties/:xyz/pulpits', (req, res) => { service.getFacultyPulpits(res, req.params['xyz']); })
+    .get(prefix + '/faculties/:xyz/teachers', (req, res) => { service.getFacultyTeachers(res, req.params['xyz']); });
 
 app.post(prefix + '/faculties', (req, res) => { service.insertFaculty(res, req.body); })
     .post(prefix + '/pulpits', (req, res) => { service.insertPulpit(res, req.body); })
@@ -48,10 +56,10 @@ app.delete(prefix + '/faculties/:faculty', (req, res) => { service.deleteFaculty
 
 
 
-    
+
 
 sequelize.authenticate()
-    .then(() => { console.log('[OK] Connected to database.\n'); })          // sequelize.close();
+    .then(() => { console.log('[OK] Connected to database.\n'); })      // sequelize.close();
     .catch(err => { console.log('[ERROR] Sequelize: ', err); });
 
 

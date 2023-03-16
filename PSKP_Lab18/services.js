@@ -18,6 +18,49 @@ export default class SequelizeService {
 
     getAuditoriums = async res => { res.json(await auditorium.findAll()); }
 
+    getFacultyPulpits = async (res, xyz) => {
+        try {
+            const facultyToFind = await faculty.findByPk(xyz);
+            const pulpits = await pulpit.findAll({ where: { faculty: xyz } });
+            if (!facultyToFind)
+                this.sendCustomError(res, 404, `Cannot find faculty = ${xyz}`);
+            else if (!pulpits)
+                this.sendCustomError(res, 404, `Cannot find pulpits with faculty = ${xyz}`);
+            else {
+                res.json(await faculty.findAll({
+                    where: { faculty: xyz },
+                    include: {
+                        model: pulpit,
+                        attributes: ['pulpit', 'pulpit_name']
+                    },
+                }));
+            }
+        }
+        catch (err) { this.sendError(res, err); }
+    }
+
+    getFacultyTeachers = async (res, xyz) => {
+        try {
+            const facultyToFind = await faculty.findByPk(xyz);
+            if (!facultyToFind)
+                this.sendCustomError(res, 404, `Cannot find faculty = ${xyz}`);
+            else {
+                res.json(await faculty.findAll({
+                    where: { faculty: xyz },
+                    include: {
+                        model: pulpit,
+                        attributes: ['pulpit', 'pulpit_name'],
+                        include: {
+                            model: teacher,
+                            attributes: ['teacher', 'teacher_name'],
+                        }
+                    }
+                }));
+            }
+        }
+        catch (err) { this.sendError(res, err); }
+    }
+
 
 
 
@@ -64,7 +107,7 @@ export default class SequelizeService {
             if (!facultyToUpdate)
                 this.sendCustomError(res, 404, `Cannot find faculty = ${dto.faculty}`);
             else {
-                faculty.update(dto, { where: { faculty: dto.faculty } })
+                await faculty.update(dto, { where: { faculty: dto.faculty } })
                     .then(async () => {
                         res.json(await faculty.findByPk(dto.faculty));
                     });
@@ -76,10 +119,13 @@ export default class SequelizeService {
     updatePulpit = async (res, dto) => {
         try {
             const pulpitToUpdate = await pulpit.findByPk(dto.pulpit);
+            const facultyToUpdate = await faculty.findByPk(dto.faculty);
             if (!pulpitToUpdate)
                 this.sendCustomError(res, 404, `Cannot find pulpit = ${dto.pulpit}`);
+            else if (!facultyToUpdate)
+                this.sendCustomError(res, 404, `Cannot find faculty = ${dto.faculty}`);
             else {
-                pulpit.update(dto, { where: { pulpit: dto.pulpit } })
+                await pulpit.update(dto, { where: { pulpit: dto.pulpit } })
                     .then(async () => {
                         res.json(await pulpit.findByPk(dto.pulpit));
                     });
@@ -91,10 +137,13 @@ export default class SequelizeService {
     updateSubject = async (res, dto) => {
         try {
             const subjectToUpdate = await subject.findByPk(dto.subject);
+            const pulpitToUpdate = await pulpit.findByPk(dto.pulpit);
             if (!subjectToUpdate)
                 this.sendCustomError(res, 404, `Cannot find subject = ${dto.subject}`);
+            else if (!pulpitToUpdate)
+                this.sendCustomError(res, 404, `Cannot find pulpit = ${dto.pulpit}`);
             else {
-                subject.update(dto, { where: { subject: dto.subject } })
+                await subject.update(dto, { where: { subject: dto.subject } })
                     .then(async () => {
                         res.json(await subject.findByPk(dto.subject));
                     });
@@ -106,10 +155,13 @@ export default class SequelizeService {
     updateTeacher = async (res, dto) => {
         try {
             const teacherToUpdate = await teacher.findByPk(dto.teacher);
+            const pulpitToUpdate = await pulpit.findByPk(dto.pulpit);
             if (!teacherToUpdate)
                 this.sendCustomError(res, 404, `Cannot find teacher = ${dto.teacher}`);
+            else if (!pulpitToUpdate)
+                this.sendCustomError(res, 404, `Cannot find pulpit = ${dto.pulpit}`);
             else {
-                teacher.update(dto, { where: { teacher: dto.teacher } })
+                await teacher.update(dto, { where: { teacher: dto.teacher } })
                     .then(async () => {
                         res.json(await teacher.findByPk(dto.teacher));
                     });
@@ -122,9 +174,9 @@ export default class SequelizeService {
         try {
             const typeToUpdate = await auditorium_type.findByPk(dto.auditorium_type);
             if (!typeToUpdate)
-                this.sendCustomError(res, 404, `Cannot find  = ${dto.auditorium_type}`);
+                this.sendCustomError(res, 404, `Cannot find auditorium_type = ${dto.auditorium_type}`);
             else {
-                auditorium_type.update(dto, { where: { auditorium_type: dto.auditorium_type } })
+                await auditorium_type.update(dto, { where: { auditorium_type: dto.auditorium_type } })
                     .then(async () => {
                         res.json(await auditorium_type.findByPk(dto.auditorium_type));
                     });
@@ -136,10 +188,13 @@ export default class SequelizeService {
     updateAuditorium = async (res, dto) => {
         try {
             const auditoriumToUpdate = await auditorium.findByPk(dto.auditorium);
+            const typeToUpdate = await auditorium_type.findByPk(dto.auditorium_type);
             if (!auditoriumToUpdate)
                 this.sendCustomError(res, 404, `Cannot find auditorium = ${dto.auditorium}`);
+            else if (!typeToUpdate)
+                this.sendCustomError(res, 404, `Cannot find auditorium_type = ${dto.auditorium_type}`);
             else {
-                auditorium.update(dto, { where: { auditorium: dto.auditorium } })
+                await auditorium.update(dto, { where: { auditorium: dto.auditorium } })
                     .then(async () => {
                         res.json(await auditorium.findByPk(dto.auditorium));
                     });
@@ -154,58 +209,73 @@ export default class SequelizeService {
     // =================================  DELETE  =================================
 
     deleteFaculty = async (res, faculty_id) => {
-        const facultyToDelete = await faculty.findByPk(faculty_id);
-        await faculty.destroy({ where: { faculty: faculty_id } })
-            .then(() => {
-                if (!facultyToDelete)
-                    this.sendCustomError(res, 404, `Cannot find faculty = ${faculty_id}`);
-                else
-                    res.json(facultyToDelete);
-            });
+        try {
+            const facultyToDelete = await faculty.findByPk(faculty_id);
+            await faculty.destroy({ where: { faculty: faculty_id } })
+                .then(() => {
+                    if (!facultyToDelete)
+                        this.sendCustomError(res, 404, `Cannot find faculty = ${faculty_id}`);
+                    else
+                        res.json(facultyToDelete);
+                });
+        }
+        catch (err) { this.sendError(res, err); }
     }
 
     deletePulpit = async (res, pulpit_id) => {
-        const pulpitToDelete = await pulpit.findByPk(pulpit_id);
-        await pulpit.destroy({ where: { pulpit: pulpit_id } })
-            .then(() => {
-                if (!pulpitToDelete)
-                    this.sendCustomError(res, 404, `Cannot find pulpit = ${pulpit_id}`);
-                else
-                    res.json(pulpitToDelete);
-            });
+        try {
+            const pulpitToDelete = await pulpit.findByPk(pulpit_id);
+            await pulpit.destroy({ where: { pulpit: pulpit_id } })
+                .then(() => {
+                    if (!pulpitToDelete)
+                        this.sendCustomError(res, 404, `Cannot find pulpit = ${pulpit_id}`);
+                    else
+                        res.json(pulpitToDelete);
+                });
+        }
+        catch (err) { this.sendError(res, err); }
     }
 
     deleteSubject = async (res, subject_id) => {
-        const subjectToDelete = await subject.findByPk(subject_id);
-        await subject.destroy({ where: { subject: subject_id } })
-            .then(() => {
-                if (!subjectToDelete)
-                    this.sendCustomError(res, 404, `Cannot find subject = ${subject_id}`);
-                else
-                    res.json(subjectToDelete);
-            });
+        try {
+            const subjectToDelete = await subject.findByPk(subject_id);
+            await subject.destroy({ where: { subject: subject_id } })
+                .then(() => {
+                    if (!subjectToDelete)
+                        this.sendCustomError(res, 404, `Cannot find subject = ${subject_id}`);
+                    else
+                        res.json(subjectToDelete);
+                });
+        }
+        catch (err) { this.sendError(res, err); }
     }
 
     deleteAuditoriumType = async (res, type_id) => {
-        const typeToDelete = await auditorium_type.findByPk(type_id);
-        await auditorium_type.destroy({ where: { auditorium_type: type_id } })
-            .then(() => {
-                if (!typeToDelete)
-                    this.sendCustomError(res, 404, `Cannot find auditorium_type = ${type_id}`);
-                else
-                    res.json(typeToDelete);
-            });
+        try {
+            const typeToDelete = await auditorium_type.findByPk(type_id);
+            await auditorium_type.destroy({ where: { auditorium_type: type_id } })
+                .then(() => {
+                    if (!typeToDelete)
+                        this.sendCustomError(res, 404, `Cannot find auditorium_type = ${type_id}`);
+                    else
+                        res.json(typeToDelete);
+                });
+        }
+        catch (err) { this.sendError(res, err); }
     }
 
     deleteAuditorium = async (res, auditorium_id) => {
-        const auditoriumToDelete = await auditorium.findByPk(auditorium_id);
-        await auditorium.destroy({ where: { auditorium: auditorium_id } })
-            .then(() => {
-                if (!auditoriumToDelete)
-                    this.sendCustomError(res, 404, `Cannot find auditorium = ${auditorium_id}`);
-                else
-                    res.json(auditoriumToDelete);
-            });
+        try {
+            const auditoriumToDelete = await auditorium.findByPk(auditorium_id);
+            await auditorium.destroy({ where: { auditorium: auditorium_id } })
+                .then(() => {
+                    if (!auditoriumToDelete)
+                        this.sendCustomError(res, 404, `Cannot find auditorium = ${auditorium_id}`);
+                    else
+                        res.json(auditoriumToDelete);
+                });
+        }
+        catch (err) { this.sendError(res, err); }
     }
 
 
