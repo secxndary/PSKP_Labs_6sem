@@ -12,36 +12,24 @@ const sequelize = new Sequelize('sequel', 'postgres', '1111', {
 export default class SequelizeService {
 
 
-    // ========================================  GET  ========================================
+    // ==================================  GET  ==================================
 
-    getFaculties = async res => {
-        await faculty.findAll().then(items => { res.send(JSON.stringify(items, null, 4)); });
-    }
+    getFaculties = async res => { res.json(await faculty.findAll()); }
 
-    getPulpits = async res => {
-        await pulpit.findAll().then(items => { res.send(JSON.stringify(items, null, 4)); });
-    }
+    getPulpits = async res => { res.json(await pulpit.findAll()); }
 
-    getSubjects = async res => {
-        await subject.findAll().then(items => { res.send(JSON.stringify(items, null, 4)); });
-    }
+    getSubjects = async res => { res.json(await subject.findAll()); }
 
-    getTeachers = async res => {
-        await teacher.findAll().then(items => { res.send(JSON.stringify(items, null, 4)); });
-    }
+    getTeachers = async res => { res.json(await teacher.findAll()); }
 
-    getAuditoriumTypes = async res => {
-        await auditorium_type.findAll().then(items => { res.send(JSON.stringify(items, null, 4)); });
-    }
+    getAuditoriumTypes = async res => { res.json(await auditorium_type.findAll()); }
 
-    getAuditoriums = async res => {
-        await auditorium.findAll().then(items => { res.send(JSON.stringify(items, null, 4)); });
-    }
+    getAuditoriums = async res => { res.json(await auditorium.findAll()); }
 
 
 
 
-    // =============================  INSERT  ==============================
+    // ================================  INSERT  =================================
 
     insertFaculty = async (res, dto) => {
         try { res.json(await faculty.create(dto)); }
