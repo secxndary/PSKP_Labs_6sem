@@ -21,6 +21,7 @@ const sequelize = new Sequelize('sequel', 'postgres', '1111', {
 
 
 app.use(express.json());
+app.use(express.static('static'))
 app.get('/', (req, res) => { res.sendFile(__dirname + 'index.html'); });
 
 app.get(prefix + '/faculties', (req, res) => { service.getFaculties(res); })
