@@ -1,4 +1,15 @@
+import { Sequelize, Transaction } from 'sequelize';
 import { faculty, pulpit, subject, teacher, auditorium_type, auditorium } from './models/models.js';
+const sequelize = new Sequelize('sequel', 'postgres', '1111', {
+    host: 'localhost',
+    dialect: 'postgres',
+    define: { timestamps: false },
+    pool: {
+        max: 5,
+        min: 1,
+        acquire: 30000
+    }
+});
 
 
 
@@ -284,6 +295,28 @@ export default class SequelizeService {
                 });
         }
         catch (err) { this.sendError(res, err); }
+    }
+
+
+
+
+    // ===============================  TRANSACTION  ==============================
+
+    transaction = async res => {
+        const trans = await sequelize.transaction({ isolationLevel: Transaction.ISOLATION_LEVELS.READ_UNCOMMITTED });
+        await auditorium.update(
+            { auditorium_capacity: 0 },
+            { where: {} },
+            { transaction: trans }
+        );
+        console.log('----- Waiting 10 seconds...');
+
+        setTimeout(async () => {
+            await trans.rollback();
+            console.log('----- Values rolled back.');
+        }, 10000);
+
+        res.json({ "message": "Check out console logging" });
     }
 
 

@@ -10,9 +10,7 @@ const service = new SequelizeService;
 const sequelize = new Sequelize('sequel', 'postgres', '1111', {
     host: 'localhost',
     dialect: 'postgres',
-    define: {
-        timestamps: false
-    },
+    define: { timestamps: false },
     pool: {
         max: 5,
         min: 1,
@@ -34,7 +32,8 @@ app.get(prefix + '/faculties', (req, res) => service.getFaculties(res))
     .get(prefix + '/auditoriums', (req, res) => service.getAuditoriums(res))
     .get(prefix + '/faculties/:xyz/pulpits', (req, res) => service.getFacultyPulpits(res, req.params['xyz']))
     .get(prefix + '/faculties/:xyz/teachers', (req, res) => service.getFacultyTeachers(res, req.params['xyz']))
-    .get(prefix + '/auditoriumsgt60', (req, res) => service.getAuditoriumsGt60(res));
+    .get(prefix + '/auditoriumsgt60', (req, res) => service.getAuditoriumsGt60(res))
+    .get(prefix + '/transaction', (req, res) => service.transaction(res));
 
 app.post(prefix + '/faculties', (req, res) => service.insertFaculty(res, req.body))
     .post(prefix + '/pulpits', (req, res) => service.insertPulpit(res, req.body))

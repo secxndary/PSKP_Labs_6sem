@@ -1,5 +1,15 @@
 import { Sequelize, Op } from 'sequelize';
-const sequelize = new Sequelize('sequel', 'postgres', '1111', { host: 'localhost', dialect: 'postgres', define: { timestamps: false } });
+const sequelize = new Sequelize('sequel', 'postgres', '1111', {
+    host: 'localhost',
+    dialect: 'postgres',
+    define: { timestamps: false },
+    pool: {
+        max: 5,
+        min: 1,
+        acquire: 30000
+    }
+});
+
 
 
 
