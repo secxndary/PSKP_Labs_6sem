@@ -61,6 +61,14 @@ export default class SequelizeService {
         catch (err) { this.sendError(res, err); }
     }
 
+    getAuditoriumsGt60 = async res => {
+        const auditoriumsGt60 = await auditorium.scope('greaterThan60').findAll();
+        if (!auditoriumsGt60)
+            this.sendCustomError(res, 404, 'Cannot find auditoriums with capacity > 60');
+        else
+            res.json(auditoriumsGt60);
+    }
+
 
 
 

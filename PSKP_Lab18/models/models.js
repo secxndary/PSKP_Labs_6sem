@@ -1,4 +1,4 @@
-import { Sequelize } from 'sequelize';
+import { Sequelize, Op } from 'sequelize';
 const sequelize = new Sequelize('sequel', 'postgres', '1111', { host: 'localhost', dialect: 'postgres', define: { timestamps: false } });
 
 
@@ -61,7 +61,11 @@ const faculty = sequelize.define(
     },
     {
         sequelize,
-        tableName: 'faculty'
+        tableName: 'faculty',
+        hooks: {
+            beforeCreate: {},
+            afterCreate: {}
+        }
     }
 );
 faculty.hasMany(pulpit, {
@@ -81,7 +85,12 @@ const auditorium = sequelize.define(
     {
         sequelize,
         tableName: 'auditorium',
-        timestamps: false
+        timestamps: false,
+        scopes: {
+            greaterThan60: {
+                where: { auditorium_capacity: { [Op.gt]: 60 } }
+            }
+        }
     }
 );
 
