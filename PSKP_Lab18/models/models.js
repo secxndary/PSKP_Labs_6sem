@@ -63,8 +63,8 @@ const faculty = sequelize.define(
         sequelize,
         tableName: 'faculty',
         hooks: {
-            beforeCreate: {},
-            afterCreate: {}
+            beforeCreate: (fac, options) => { console.log('----- Data to insert: ', fac.dataValues); },
+            afterCreate: (fac, options) => { console.log('----- Inserted data:  ', fac.dataValues); }
         }
     }
 );

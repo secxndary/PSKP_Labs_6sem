@@ -16,8 +16,7 @@ const sequelize = new Sequelize('sequel', 'postgres', '1111', {
     pool: {
         max: 5,
         min: 1,
-        acquire: 30000,
-        idle: 10000
+        acquire: 30000
     }
 });
 
