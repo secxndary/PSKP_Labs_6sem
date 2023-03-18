@@ -33,6 +33,7 @@ app.get(prefix + '/faculties', (req, res) => service.getFaculties(res))
     .get(prefix + '/faculties/:xyz/pulpits', (req, res) => service.getFacultyPulpits(res, req.params['xyz']))
     .get(prefix + '/faculties/:xyz/teachers', (req, res) => service.getFacultyTeachers(res, req.params['xyz']))
     .get(prefix + '/auditoriumsgt60', (req, res) => service.getAuditoriumsGt60(res))
+    .get(prefix + '/auditoriumsbetween10and60', (req, res) => service.getAuditoriumsbetween10And60(res))
     .get(prefix + '/transaction', (req, res) => service.transaction(res));
 
 app.post(prefix + '/faculties', (req, res) => service.insertFaculty(res, req.body))

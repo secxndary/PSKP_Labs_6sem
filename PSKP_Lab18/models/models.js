@@ -99,6 +99,9 @@ const auditorium = sequelize.define(
         scopes: {
             greaterThan60: {
                 where: { auditorium_capacity: { [Op.gt]: 60 } }
+            },
+            between10And60: {
+                where: { auditorium_capacity: { [Op.between]: [10, 60] } }
             }
         }
     }
