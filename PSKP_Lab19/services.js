@@ -68,32 +68,126 @@ export default class PrismaService {
     // =================================  INSERT  =================================
 
     insertFaculty = async (res, dto) => {
-        try { res.json(await faculty.create(dto)); }
+        try {
+            const facultyExists = await prisma.faculty.findFirst({ where: { faculty: dto.faculty } });
+
+            if (facultyExists)
+                this.sendCustomError(res, 409, `There is already faculty = ${dto.faculty}`);
+            else
+                res.status(201).json(await prisma.faculty.create({
+                    data: {
+                        faculty: dto.faculty,
+                        faculty_name: dto.faculty_name
+                    }
+                }));
+        }
         catch (err) { this.sendError(res, err); }
     }
+
 
     insertPulpit = async (res, dto) => {
-        try { res.json(await pulpit.create(dto)); }
+        try {
+            const pulpitExists = await prisma.pulpit.findFirst({ where: { pulpit: dto.pulpit } });
+            const facultyExists = await prisma.faculty.findFirst({ where: { faculty: dto.faculty } });
+
+            if (pulpitExists)
+                this.sendCustomError(res, 409, `There is already pulpit = ${dto.pulpit}`);
+            else if (!facultyExists)
+                this.sendCustomError(res, 404, `Cannot find faculty = ${dto.faculty}`);
+            else
+                res.status(201).json(await prisma.pulpit.create({
+                    data: {
+                        pulpit: dto.pulpit,
+                        pulpit_name: dto.pulpit_name,
+                        faculty: dto.faculty
+                    }
+                }));
+        }
         catch (err) { this.sendError(res, err); }
     }
+
 
     insertSubject = async (res, dto) => {
-        try { res.json(await subject.create(dto)); }
-        catch (err) { this.sendError(res, err); }
+        try {
+            const subjectExists = await prisma.subject.findFirst({ where: { subject: dto.subject } });
+            const pulpitExists = await prisma.pulpit.findFirst({ where: { pulpit: dto.pulpit } });
+
+            if (subjectExists)
+                this.sendCustomError(res, 409, `There is already subject = ${dto.subject}`);
+            else if (!pulpitExists)
+                this.sendCustomError(res, 404, `Cannot find pulpit = ${dto.pulpit}`);
+            else
+                res.status(201).json(await prisma.subject.create({
+                    data: {
+                        subject: dto.subject,
+                        subject_name: dto.subject_name,
+                        pulpit: dto.pulpit
+                    }
+                }));
+        }
+        catch (err) { console.log(err); this.sendError(res, err); }
     }
+
 
     insertTeacher = async (res, dto) => {
-        try { res.json(await teacher.create(dto)); }
+        try {
+            const teacherExists = await prisma.teacher.findFirst({ where: { teacher: dto.teacher } });
+            const pulpitExists = await prisma.pulpit.findFirst({ where: { pulpit: dto.pulpit } });
+
+            if (teacherExists)
+                this.sendCustomError(res, 409, `There is already teacher = ${dto.teacher}`);
+            else if (!pulpitExists)
+                this.sendCustomError(res, 404, `Cannot find pulpit = ${dto.pulpit}`);
+            else
+                res.status(201).json(await prisma.teacher.create({
+                    data: {
+                        teacher: dto.teacher,
+                        teacher_name: dto.teacher_name,
+                        pulpit: dto.pulpit
+                    }
+                }));
+        }
         catch (err) { this.sendError(res, err); }
     }
+
 
     insertAuditoriumType = async (res, dto) => {
-        try { res.json(await auditorium_type.create(dto)); }
+        try {
+            const typeExists = await prisma.auditoriumType.findFirst({ where: { auditorium_type: dto.auditorium_type } });
+
+            if (typeExists)
+                this.sendCustomError(res, 409, `There is already auditorium_type = ${dto.auditorium_type}`);
+            else
+                res.status(201).json(await prisma.auditoriumType.create({
+                    data: {
+                        auditorium_type: dto.auditorium_type,
+                        auditorium_typename: dto.auditorium_typename
+                    }
+                }));
+        }
         catch (err) { this.sendError(res, err); }
     }
 
+
     insertAuditorium = async (res, dto) => {
-        try { res.json(await auditorium.create(dto)); }
+        try {
+            const auditoriumExists = await prisma.auditorium.findFirst({ where: { auditorium: dto.auditorium } });
+            const typeExists = await prisma.auditoriumType.findFirst({ where: { auditorium_type: dto.auditorium_type } });
+
+            if (auditoriumExists)
+                this.sendCustomError(res, 409, `There is already auditorium = ${dto.auditorium}`);
+            else if (!typeExists)
+                this.sendCustomError(res, 404, `Cannot find auditorium_type = ${dto.auditorium_type}`);
+            else
+                res.status(201).json(await prisma.auditorium.create({
+                    data: {
+                        auditorium: dto.auditorium,
+                        auditorium_name: dto.auditorium_name,
+                        auditorium_capacity: dto.auditorium_capacity,
+                        auditorium_type: dto.auditorium_type
+                    }
+                }));
+        }
         catch (err) { this.sendError(res, err); }
     }
 
@@ -309,8 +403,8 @@ export default class PrismaService {
     sendError = async (res, err) => {
         if (err)
             res.status(409).json({
-                code: err.original?.code,
                 name: err?.name,
+                code: err.code,
                 detail: err.original?.detail,
                 message: err.message
             });

@@ -94,32 +94,32 @@ export default class SequelizeService {
     // =================================  INSERT  =================================
 
     insertFaculty = async (res, dto) => {
-        try { res.json(await faculty.create(dto)); }
+        try { res.status(201).json(await faculty.create(dto)); }
         catch (err) { this.sendError(res, err); }
     }
 
     insertPulpit = async (res, dto) => {
-        try { res.json(await pulpit.create(dto)); }
+        try { res.status(201).json(await pulpit.create(dto)); }
         catch (err) { this.sendError(res, err); }
     }
 
     insertSubject = async (res, dto) => {
-        try { res.json(await subject.create(dto)); }
+        try { res.status(201).json(await subject.create(dto)); }
         catch (err) { this.sendError(res, err); }
     }
 
     insertTeacher = async (res, dto) => {
-        try { res.json(await teacher.create(dto)); }
+        try { res.status(201).json(await teacher.create(dto)); }
         catch (err) { this.sendError(res, err); }
     }
 
     insertAuditoriumType = async (res, dto) => {
-        try { res.json(await auditorium_type.create(dto)); }
+        try { res.status(201).json(await auditorium_type.create(dto)); }
         catch (err) { this.sendError(res, err); }
     }
 
     insertAuditorium = async (res, dto) => {
-        try { res.json(await auditorium.create(dto)); }
+        try { res.status(201).json(await auditorium.create(dto)); }
         catch (err) { this.sendError(res, err); }
     }
 

@@ -44,4 +44,4 @@ app.delete(prefix + '/faculties/:faculty', (req, res) => service.deleteFaculty(r
 
 
 
-app.listen(5000, 'localhost', () => console.log('[OK] Server running at localhost:5000/\n'));
+app.listen(5000, () => console.log('[OK] Server running at localhost:5000/\n'));
