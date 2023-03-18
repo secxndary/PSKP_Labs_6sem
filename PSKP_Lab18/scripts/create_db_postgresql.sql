@@ -62,7 +62,8 @@ insert into PULPIT   (PULPIT,    PULPIT_NAME,                                   
              values  ('ЭТиМ',    'экономической теории и маркетинга',                              'ИЭФ');   
 insert into PULPIT   (PULPIT,    PULPIT_NAME,                                                      FACULTY)
              values  ('МиЭП',   'Менеджмента и экономики природопользования',                      'ИЭФ');    
-------------------------------------------------------------------------------------------------------------------------        - DROP  TABLE TEACHER
+------------------------------------------------------------------------------------------------------------------------        
+-- DROP  TABLE TEACHER
 CREATE TABLE TEACHER
  ( 
   TEACHER       CHAR(10) NOT  NULL,
@@ -283,9 +284,3 @@ select * from subject;
 select * from teacher;
 select * from auditorium_type;
 select * from auditorium;
-
-
-
-
-
- 

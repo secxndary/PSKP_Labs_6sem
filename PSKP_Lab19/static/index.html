@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>PSKP-18</title>
+    <link href="bootstrap.css" rel="stylesheet" type="text/css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/./">PSKP-18</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor02"
+                aria-controls="navbarColor02" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarColor02">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/./">
+                            Home
+                            <span class="visually-hidden">(current)</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Pricing</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">About</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button"
+                            aria-haspopup="true" aria-expanded="false">Dropdown</a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <a class="dropdown-item" href="#">Something else here</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Separated link</a>
+                        </div>
+                    </li>
+                </ul>
+                <form class="d-flex">
+                    <input class="form-control me-sm-2" type="search" placeholder="Search">
+                    <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+
+
+    <div class="container d-flex align-items-start justify-content-between">
+        <div class="row pb-2" style="width: 40%;">
+            <h1 class="mt-4 ms-4">Welcome to Lab #19!</h1>
+            <button type="button" class="btn btn-success mt-3" id="get">GET</button>
+            <button type="button" class="btn btn-info mt-2" id="post">POST</button>
+            <button type="button" class="btn btn-warning mt-2" id="put">PUT</button>
+            <button type="button" class="btn btn-danger mt-2 mb-2" id="delete">DELETE</button>
+
+            <div class="form-group mt-4">
+                <label for="pulpit">Pulpit</label>
+                <input class="form-control" type="text" name="pulpit" id="input_pulpit">
+            </div>
+
+            <div class="form-group mt-2">
+                <label for="pulpit_name">Pulpit name</label>
+                <input class="form-control" type="text" name="pulpit_name" id="input_pulpit_name">
+            </div>
+
+            <div class="form-group mt-2">
+                <label for="faculty">Faculty</label>
+                <input class="form-control" type="text" name="faculty" id="input_faculty">
+            </div>
+        </div>
+
+        <div id="result" class="mb-3 me-5" style="width: 50%; margin-top: 7%;"></div>
+    </div>
+</body>
+
+<script>
+    const baseUrl = '/api/pulpits/';
+    const result = document.getElementById("result");
+
+
+    $("#get").click(function get() {
+        fetch(baseUrl)
+            .then(responce => responce.json())
+            .then(responseText => {
+                result.innerHTML =
+                    '<pre style="white-space: pre-wrap">' +
+                    JSON.stringify(responseText, null, 4) +
+                    '</pre>';
+            });
+    });
+
+
+    $("#post").click(function post() {
+        const data = {
+            pulpit: $("#input_pulpit").val(),
+            pulpit_name: $("#input_pulpit_name").val(),
+            faculty: $("#input_faculty").val()
+        }
+        if (data.faculty == '' || data.pulpit == '' || data.pulpit_name == '') {
+            result.innerHTML = 'Fill all inputs! Bitch!';
+            return;
+        }
+
+        fetch(baseUrl, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: { 'content-type': 'application/json' }
+        })
+            .then(responce => responce.json())
+            .then(responseText => {
+                result.innerHTML =
+                    '<pre style="white-space: pre-wrap">' +
+                    JSON.stringify(responseText, null, 4) +
+                    '</pre>';
+            });
+    });
+
+
+    $("#put").click(function post() {
+        const data = {
+            pulpit: $("#input_pulpit").val(),
+            pulpit_name: $("#input_pulpit_name").val(),
+            faculty: $("#input_faculty").val()
+        }
+        if (data.faculty == '' || data.pulpit == '' || data.pulpit_name == '') {
+            result.innerHTML = 'Fill all inputs! Bitch!';
+            return;
+        }
+
+        fetch(baseUrl, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+            headers: { 'content-type': 'application/json' }
+        })
+            .then(responce => responce.json())
+            .then(responseText => {
+                result.innerHTML =
+                    '<pre style="white-space: pre-wrap">' +
+                    JSON.stringify(responseText, null, 4) +
+                    '</pre>';
+            });
+    });
+
+
+    $("#delete").click(function post() {
+        const pulpit = $("#input_pulpit").val();
+        if (pulpit == '') {
+            result.innerHTML = 'Enter pulpit! Bitch!';
+            return;
+        }
+
+        fetch(baseUrl + pulpit, {
+            method: 'DELETE',
+            headers: { 'content-type': 'application/json' }
+        })
+            .then(responce => responce.json())
+            .then(responseText => {
+                result.innerHTML =
+                    '<pre style="white-space: pre-wrap">' +
+                    JSON.stringify(responseText, null, 4) +
+                    '</pre>';
+            });
+    })
+</script>
+
+</html>
