@@ -1,11 +1,12 @@
 import { PrismaClient } from "@prisma/client";
+import { where } from "sequelize";
 const prisma = new PrismaClient();
 
 
 
 export default class PrismaService {
 
-    // ===========================================  SELECT  =========================================
+    // ===================================================  SELECT  =================================================
 
     getFaculties = async res => res.json(await prisma.faculty.findMany());
 
@@ -18,7 +19,6 @@ export default class PrismaService {
     getAuditoriumTypes = async res => res.json(await prisma.auditoriumType.findMany());
 
     getAuditoriums = async res => res.json(await prisma.auditorium.findMany());
-
 
     getFacultySubjects = async (res, xyz) => {
         try {
@@ -143,19 +143,33 @@ export default class PrismaService {
 
 
 
-    // ==========================================  INSERT  ==========================================
+
+    // ==================================================  INSERT  ==================================================
 
     insertFaculty = async (res, dto) => {
         try {
-            const facultyExists = await prisma.faculty.findFirst({ where: { faculty: dto.faculty } });
+            const { faculty, faculty_name, Pulpit } = dto;
+            const facultyExists = await prisma.faculty.findFirst({ where: { faculty, } });
 
             if (facultyExists)
-                this.sendCustomError(res, 409, `There is already faculty = ${dto.faculty}`);
+                this.sendCustomError(res, 409, `There is already faculty = ${faculty}`);
             else
                 res.status(201).json(await prisma.faculty.create({
                     data: {
-                        faculty: dto.faculty,
-                        faculty_name: dto.faculty_name
+                        faculty,
+                        faculty_name,
+                        Pulpit: {
+                            createMany: {
+                                data: Pulpit.map(pulpitData => ({
+                                    pulpit: pulpitData.pulpit,
+                                    pulpit_name: pulpitData.pulpit_name
+                                })),
+                                // skipDuplicates: true
+                            }
+                        }
+                    },
+                    include: {
+                        Pulpit: true
                     }
                 }));
         }
@@ -272,7 +286,8 @@ export default class PrismaService {
 
 
 
-    // ==========================================  UPDATE  ==========================================
+
+    // ==================================================  UPDATE  ==================================================
 
     updateFaculty = async (res, dto) => {
         try {
@@ -401,74 +416,87 @@ export default class PrismaService {
 
 
 
-    // ==========================================  DELETE  ==========================================
+
+    // ==================================================  DELETE  ==================================================
 
     deleteFaculty = async (res, faculty_id) => {
         try {
-            const facultyToDelete = await faculty.findByPk(faculty_id);
-            await faculty.destroy({ where: { faculty: faculty_id } })
-                .then(() => {
-                    if (!facultyToDelete)
-                        this.sendCustomError(res, 404, `Cannot find faculty = ${faculty_id}`);
-                    else
-                        res.json(facultyToDelete);
-                });
+            const facultyToDelete = await prisma.faculty.findUnique({ where: { faculty: faculty_id } });
+            if (!facultyToDelete)
+                this.sendCustomError(res, 404, `Cannot find faculty = ${faculty_id}`);
+            else
+                await prisma.faculty.delete({ where: { faculty: faculty_id } })
+                    .then(() => res.json(facultyToDelete));
         }
         catch (err) { this.sendError(res, err); }
     }
+
 
     deletePulpit = async (res, pulpit_id) => {
         try {
-            const pulpitToDelete = await pulpit.findByPk(pulpit_id);
-            await pulpit.destroy({ where: { pulpit: pulpit_id } })
-                .then(() => {
-                    if (!pulpitToDelete)
-                        this.sendCustomError(res, 404, `Cannot find pulpit = ${pulpit_id}`);
-                    else
-                        res.json(pulpitToDelete);
-                });
+            const pulpitToDelete = await prisma.pulpit.findUnique({ where: { pulpit: pulpit_id } });
+            if (!pulpitToDelete)
+                this.sendCustomError(res, 404, `Cannot find pulpit = ${pulpit_id}`);
+            else
+                await prisma.pulpit.delete({ where: { pulpit: pulpit_id } })
+                    .then(() => res.json(pulpitToDelete));
         }
         catch (err) { this.sendError(res, err); }
     }
+
 
     deleteSubject = async (res, subject_id) => {
         try {
-            const subjectToDelete = await subject.findByPk(subject_id);
-            await subject.destroy({ where: { subject: subject_id } })
-                .then(() => {
-                    if (!subjectToDelete)
-                        this.sendCustomError(res, 404, `Cannot find subject = ${subject_id}`);
-                    else
-                        res.json(subjectToDelete);
-                });
+            const subjectToDelete = await prisma.subject.findUnique({ where: { subject: subject_id } });
+            if (!subjectToDelete)
+                this.sendCustomError(res, 404, `Cannot find subject = ${subject_id}`);
+            else
+                await prisma.subject.delete({ where: { subject: subject_id } })
+                    .then(() => res.json(subjectToDelete));
         }
         catch (err) { this.sendError(res, err); }
     }
+
+
+
+    deleteTeacher = async (res, teacher_id) => {
+        try {
+            const teacherToDelete = await prisma.teacher.findUnique({ where: { teacher: teacher_id } });
+            if (!teacherToDelete)
+                this.sendCustomError(res, 404, `Cannot find teacher = ${teacher_id}`);
+            else
+                await prisma.teacher.delete({ where: { teacher: teacher_id } })
+                    .then(() => res.json(teacherToDelete));
+        }
+        catch (err) { this.sendError(res, err); }
+    }
+
 
     deleteAuditoriumType = async (res, type_id) => {
         try {
-            const typeToDelete = await auditorium_type.findByPk(type_id);
-            await auditorium_type.destroy({ where: { auditorium_type: type_id } })
-                .then(() => {
-                    if (!typeToDelete)
-                        this.sendCustomError(res, 404, `Cannot find auditorium_type = ${type_id}`);
-                    else
-                        res.json(typeToDelete);
-                });
+            const typeToDelete = await prisma.auditoriumType.findUnique({
+                where: { auditorium_type: type_id }
+            });
+            if (!typeToDelete)
+                this.sendCustomError(res, 404, `Cannot find auditorium_type = ${type_id}`);
+            else
+                await prisma.auditoriumType.delete({ where: { auditorium_type: type_id } })
+                    .then(() => res.json(typeToDelete));
         }
         catch (err) { this.sendError(res, err); }
     }
+
 
     deleteAuditorium = async (res, auditorium_id) => {
         try {
-            const auditoriumToDelete = await auditorium.findByPk(auditorium_id);
-            await auditorium.destroy({ where: { auditorium: auditorium_id } })
-                .then(() => {
-                    if (!auditoriumToDelete)
-                        this.sendCustomError(res, 404, `Cannot find auditorium = ${auditorium_id}`);
-                    else
-                        res.json(auditoriumToDelete);
-                });
+            const auditoriumToDelete = await prisma.auditorium.findUnique({
+                where: { auditorium: auditorium_id }
+            });
+            if (!auditoriumToDelete)
+                this.sendCustomError(res, 404, `Cannot find auditorium = ${auditorium_id}`);
+            else
+                await prisma.auditorium.delete({ where: { auditorium: auditorium_id } })
+                    .then(() => res.json(auditoriumToDelete));
         }
         catch (err) { this.sendError(res, err); }
     }
@@ -476,7 +504,7 @@ export default class PrismaService {
 
 
 
-    // ========================================  TRANSACTION  =======================================
+    // ================================================  TRANSACTION  ===============================================
 
     transaction = async res => {
         const trans = await sequelize.transaction({ isolationLevel: Transaction.ISOLATION_LEVELS.READ_UNCOMMITTED });
@@ -498,7 +526,7 @@ export default class PrismaService {
 
 
 
-    // ========================================  ERROR UTILS  =======================================
+    // ================================================  ERROR UTILS  ===============================================
 
     sendError = async (res, err) => {
         if (err)
