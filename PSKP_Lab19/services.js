@@ -19,47 +19,75 @@ export default class PrismaService {
 
     getAuditoriums = async res => res.json(await prisma.auditorium.findMany());
 
-    getFacultyPulpits = async (res, xyz) => {
-        try {
-            const facultyToFind = await prisma.faculty.findByPk(xyz);
-            const pulpits = await prisma.pulpit.findAll({ where: { faculty: xyz } });
-            if (!facultyToFind)
-                this.sendCustomError(res, 404, `Cannot find faculty = ${xyz}`);
-            else if (!pulpits)
-                this.sendCustomError(res, 404, `Cannot find pulpits with faculty = ${xyz}`);
-            else {
-                res.json(await prisma.faculty.findAll({
-                    where: { faculty: xyz },
-                    include: {
-                        model: pulpit,
-                        attributes: ['pulpit', 'pulpit_name']
-                    },
-                }));
-            }
-        }
-        catch (err) { this.sendError(res, err); }
-    }
 
-    getFacultyTeachers = async (res, xyz) => {
+    getFacultySubjects = async (res, xyz) => {
         try {
-            const facultyToFind = await faculty.findByPk(xyz);
+            const facultyToFind = await prisma.faculty.findUnique({ where: { faculty: xyz } });
             if (!facultyToFind)
                 this.sendCustomError(res, 404, `Cannot find faculty = ${xyz}`);
             else {
-                res.json(await faculty.findAll({
+                res.json(await prisma.faculty.findMany({
                     where: { faculty: xyz },
-                    include: {
-                        model: pulpit,
-                        attributes: ['pulpit', 'pulpit_name'],
-                        include: {
-                            model: teacher,
-                            attributes: ['teacher', 'teacher_name'],
+                    select: {
+                        faculty: true,
+                        Pulpit: {
+                            select: {
+                                pulpit: true,
+                                Subject: { select: { subject_name: true } }
+                            }
                         }
                     }
                 }));
             }
         }
         catch (err) { this.sendError(res, err); }
+    }
+
+
+    getTypesAuditoriums = async (res, xyz) => {
+        try {
+            const typeToFind = await prisma.auditoriumType.findUnique({ where: { auditorium_type: xyz } });
+            if (!typeToFind)
+                this.sendCustomError(res, 404, `Cannot find auditorium_type = ${xyz}`);
+            else {
+                res.json(await prisma.auditoriumType.findMany({
+                    where: { auditorium_type: xyz },
+                    select: {
+                        auditorium_type: true,
+                        Auditorium: { select: { auditorium: true } }
+                    }
+                }));
+            }
+        }
+        catch (err) { this.sendError(res, err); }
+    }
+
+
+    getComputerAuditoriums1k = async res => {
+        try {
+            res.json(await prisma.auditorium.findMany({
+                where: {
+                    auditorium_type: 'ЛБ-К',
+                    auditorium: { endsWith: '-1' }
+                },
+            }));
+        }
+        catch (err) { this.sendError(res, err); }
+    }
+
+
+    getPuplitsWithoutTeachers = async res => {
+        
+    }
+
+
+    getPulpitsWithVladimir = async res => {
+
+    }
+
+
+    getAuditoriumsWithSameTypeAndCapacity = async res => {
+
     }
 
 

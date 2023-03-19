@@ -20,6 +20,10 @@ app.get(prefix + '/faculties', (req, res) => service.getFaculties(res))
     .get(prefix + '/auditoriums', (req, res) => service.getAuditoriums(res))
     .get(prefix + '/faculties/:xyz/subjects', (req, res) => service.getFacultySubjects(res, req.params['xyz']))
     .get(prefix + '/auditoriumtypes/:xyz/auditoriums', (req, res) => service.getTypesAuditoriums(res, req.params['xyz']))
+    .get(prefix + '/auditoriumsWithComp1', (req, res) => service.getComputerAuditoriums1k(res))
+    .get(prefix + '/puplitsWithoutTeachers', (req, res) => service.getPuplitsWithoutTeachers(res))
+    .get(prefix + '/pulpitsWithVladimir', (req, res) => service.getPulpitsWithVladimir(res))
+    .get(prefix + '/auditoriumsSameCount', (req, res) => service.getAuditoriumsWithSameTypeAndCapacity(res))
     .get(prefix + '/transaction', (req, res) => service.transaction(res));
 
 app.post(prefix + '/faculties', (req, res) => service.insertFaculty(res, req.body))
@@ -44,4 +48,4 @@ app.delete(prefix + '/faculties/:faculty', (req, res) => service.deleteFaculty(r
 
 
 
-app.listen(5000, () => console.log('[OK] Server running at localhost:5000/\n'));
+app.listen(process.env.PORT, () => console.log(`[OK] Server running at localhost:${process.env.PORT}/\n`));
