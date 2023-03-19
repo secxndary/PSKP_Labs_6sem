@@ -149,7 +149,7 @@ export default class PrismaService {
     insertFaculty = async (res, dto) => {
         try {
             const { faculty, faculty_name, Pulpit } = dto;
-            const facultyExists = await prisma.faculty.findFirst({ where: { faculty, } });
+            const facultyExists = await prisma.faculty.findFirst({ where: { faculty } });
 
             if (facultyExists)
                 this.sendCustomError(res, 409, `There is already faculty = ${faculty}`);
@@ -165,6 +165,25 @@ export default class PrismaService {
                                     pulpit_name: pulpitData.pulpit_name
                                 })),
                                 // skipDuplicates: true
+                                // если это раскомментить, то при передаче клиентом палпитов которые уже есть в бд,
+                                // сервер вернёт просто [] типа ничего не создалось, и создаст только факультет.
+                                // если же не добавить skipDublicates, то если палпит будет нарушать праймари кей,  
+                                // то вернется ошибка и не будет создан ни палпит, ни факультет.
+                                // если что данные от клиента выглядят вот так:
+                                //{
+                                //	"faculty": "factz",
+                                //	"faculty_name": "zxc",
+                                //	"Pulpit": [
+                                //		{
+                                //			"pulpit": "pulpa1",
+                                //			"pulpit_name": "sdfsdf"
+                                //		},
+                                //			{
+                                //			"pulpit": "pulpa2",
+                                //			"pulpit_name": "sdfsdf3"
+                                //		}
+                                //	]
+                                //}
                             }
                         }
                     },
@@ -178,24 +197,35 @@ export default class PrismaService {
 
 
     insertPulpit = async (res, dto) => {
-        try {
-            const pulpitExists = await prisma.pulpit.findFirst({ where: { pulpit: dto.pulpit } });
-            const facultyExists = await prisma.faculty.findFirst({ where: { faculty: dto.faculty } });
+        // try {
+        const { pulpit, pulpit_name, faculty, faculty_name } = dto;
+        const pulpitExists = await prisma.pulpit.findFirst({ where: { pulpit } });
 
-            if (pulpitExists)
-                this.sendCustomError(res, 409, `There is already pulpit = ${dto.pulpit}`);
-            else if (!facultyExists)
-                this.sendCustomError(res, 404, `Cannot find faculty = ${dto.faculty}`);
-            else
-                res.status(201).json(await prisma.pulpit.create({
-                    data: {
-                        pulpit: dto.pulpit,
-                        pulpit_name: dto.pulpit_name,
-                        faculty: dto.faculty
+        if (pulpitExists)
+            this.sendCustomError(res, 409, `There is already pulpit = ${dto.pulpit}`);
+        else
+            res.status(201).json(await prisma.pulpit.create({
+                data: {
+                    pulpit,
+                    pulpit_name,
+                    Faculty: {
+                        connectOrCreate: {
+                            where: { faculty },
+                            create: {
+                                faculty,
+                                faculty_name
+                            }
+                        }
                     }
-                }));
-        }
-        catch (err) { this.sendError(res, err); }
+                },
+                select: {
+                    pulpit: true,
+                    pulpit_name: true,
+                    Faculty: true
+                }
+            }));
+        // }
+        // catch (err) { this.sendError(res, err); }
     }
 
 
