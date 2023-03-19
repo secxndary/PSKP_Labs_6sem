@@ -77,17 +77,67 @@ export default class PrismaService {
 
 
     getPuplitsWithoutTeachers = async res => {
-        
+        try {
+            const pulpitsWithoutTeachers = await prisma.pulpit.findMany({
+                where: {
+                    Teacher: { none: {} }
+                }
+            });
+            if (pulpitsWithoutTeachers.length === 0)
+                this.sendCustomError(res, 404, 'There is no pulpits without teachers');
+            else
+                res.json(pulpitsWithoutTeachers);
+        }
+        catch (err) { this.sendError(res, err); }
     }
 
 
     getPulpitsWithVladimir = async res => {
-
+        try {
+            const pulpitsWithVladimir = await prisma.pulpit.findMany({
+                where: {
+                    Teacher: {
+                        some: {
+                            teacher_name: { contains: 'Владимир' }
+                        }
+                    }
+                },
+                select: {
+                    pulpit: true,
+                    pulpit_name: true,
+                    Teacher: {
+                        select: {
+                            teacher_name: true
+                        }
+                    }
+                }
+            });
+            if (pulpitsWithVladimir.length === 0)
+                this.sendCustomError(res, 404, 'There is no pulpits with teachers named "Vladimir"');
+            else
+                res.json(pulpitsWithVladimir);
+        }
+        catch (err) { this.sendError(res, err); }
     }
 
 
     getAuditoriumsWithSameTypeAndCapacity = async res => {
-
+        try {
+            const sameAuditoriums = await prisma.auditorium.groupBy({
+                by: ['auditorium_capacity', 'auditorium_type'],
+                _count: { auditorium: true },
+                having: {
+                    auditorium: {
+                        _count: { gt: 1 }
+                    }
+                }
+            });
+            if (sameAuditoriums.length === 0)
+                this.sendCustomError(res, 404, 'There is no auditoriums with same type and capacity');
+            else
+                res.json(sameAuditoriums);
+        }
+        catch (err) { this.sendError(res, err); }
     }
 
 
