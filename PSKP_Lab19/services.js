@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export default class PrismaService {
 
-    // ==================================  SELECT  ================================
+    // ===========================================  SELECT  =========================================
 
     getFaculties = async res => res.json(await prisma.faculty.findMany());
 
@@ -143,7 +143,7 @@ export default class PrismaService {
 
 
 
-    // =================================  INSERT  =================================
+    // ==========================================  INSERT  ==========================================
 
     insertFaculty = async (res, dto) => {
         try {
@@ -272,105 +272,127 @@ export default class PrismaService {
 
 
 
-    // =================================  UPDATE  =================================
+    // ==========================================  UPDATE  ==========================================
 
     updateFaculty = async (res, dto) => {
         try {
-            const facultyToUpdate = await faculty.findByPk(dto.faculty);
+            const facultyToUpdate = await prisma.faculty.findUnique({ where: { faculty: dto.faculty } });
             if (!facultyToUpdate)
                 this.sendCustomError(res, 404, `Cannot find faculty = ${dto.faculty}`);
             else {
-                await faculty.update(dto, { where: { faculty: dto.faculty } })
-                    .then(async () => {
-                        res.json(await faculty.findByPk(dto.faculty));
-                    });
+                await prisma.faculty.update({
+                    where: { faculty: dto.faculty },
+                    data: { faculty_name: dto.faculty_name }
+                }).then(async () => res.json(await prisma.faculty.findUnique({ where: { faculty: dto.faculty } })));
             }
         }
         catch (err) { this.sendError(res, err); }
     }
 
+
     updatePulpit = async (res, dto) => {
         try {
-            const pulpitToUpdate = await pulpit.findByPk(dto.pulpit);
-            const facultyToUpdate = await faculty.findByPk(dto.faculty);
+            const pulpitToUpdate = await prisma.pulpit.findUnique({ where: { pulpit: dto.pulpit } });
+            const facultyToUpdate = await prisma.faculty.findUnique({ where: { faculty: dto.faculty } });
+
             if (!pulpitToUpdate)
                 this.sendCustomError(res, 404, `Cannot find pulpit = ${dto.pulpit}`);
             else if (!facultyToUpdate)
                 this.sendCustomError(res, 404, `Cannot find faculty = ${dto.faculty}`);
             else {
-                await pulpit.update(dto, { where: { pulpit: dto.pulpit } })
-                    .then(async () => {
-                        res.json(await pulpit.findByPk(dto.pulpit));
-                    });
+                await prisma.pulpit.update({
+                    where: { pulpit: dto.pulpit },
+                    data: {
+                        pulpit_name: dto.pulpit_name,
+                        faculty: dto.faculty
+                    }
+                }).then(async () => res.json(await prisma.pulpit.findUnique({ where: { pulpit: dto.pulpit } })));
             }
         }
         catch (err) { this.sendError(res, err); }
     }
 
+
     updateSubject = async (res, dto) => {
         try {
-            const subjectToUpdate = await subject.findByPk(dto.subject);
-            const pulpitToUpdate = await pulpit.findByPk(dto.pulpit);
+            const subjectToUpdate = await prisma.subject.findUnique({ where: { subject: dto.subject } });
+            const pulpitToUpdate = await prisma.pulpit.findUnique({ where: { pulpit: dto.pulpit } });
+
             if (!subjectToUpdate)
                 this.sendCustomError(res, 404, `Cannot find subject = ${dto.subject}`);
             else if (!pulpitToUpdate)
                 this.sendCustomError(res, 404, `Cannot find pulpit = ${dto.pulpit}`);
             else {
-                await subject.update(dto, { where: { subject: dto.subject } })
-                    .then(async () => {
-                        res.json(await subject.findByPk(dto.subject));
-                    });
+                await prisma.subject.update({
+                    where: { subject: dto.subject },
+                    data: {
+                        subject_name: dto.subject_name,
+                        pulpit: dto.pulpit
+                    }
+                }).then(async () => res.json(await prisma.subject.findUnique({ where: { subject: dto.subject } })));
             }
         }
         catch (err) { this.sendError(res, err); }
     }
 
+
     updateTeacher = async (res, dto) => {
         try {
-            const teacherToUpdate = await teacher.findByPk(dto.teacher);
-            const pulpitToUpdate = await pulpit.findByPk(dto.pulpit);
+            const teacherToUpdate = await prisma.teacher.findUnique({ where: { teacher: dto.teacher } });
+            const pulpitToUpdate = await prisma.pulpit.findUnique({ where: { pulpit: dto.pulpit } });
+
             if (!teacherToUpdate)
                 this.sendCustomError(res, 404, `Cannot find teacher = ${dto.teacher}`);
             else if (!pulpitToUpdate)
                 this.sendCustomError(res, 404, `Cannot find pulpit = ${dto.pulpit}`);
             else {
-                await teacher.update(dto, { where: { teacher: dto.teacher } })
-                    .then(async () => {
-                        res.json(await teacher.findByPk(dto.teacher));
-                    });
+                await prisma.teacher.update({
+                    where: { teacher: dto.teacher },
+                    data: {
+                        teacher_name: dto.teacher_name,
+                        pulpit: dto.pulpit
+                    }
+                }).then(async () => res.json(await prisma.teacher.findUnique({ where: { teacher: dto.teacher } })));
             }
         }
         catch (err) { this.sendError(res, err); }
     }
+
 
     updateAuditoriumType = async (res, dto) => {
         try {
-            const typeToUpdate = await auditorium_type.findByPk(dto.auditorium_type);
+            const typeToUpdate = await prisma.auditoriumType.findUnique({ where: { auditorium_type: dto.auditorium_type } });
             if (!typeToUpdate)
                 this.sendCustomError(res, 404, `Cannot find auditorium_type = ${dto.auditorium_type}`);
             else {
-                await auditorium_type.update(dto, { where: { auditorium_type: dto.auditorium_type } })
-                    .then(async () => {
-                        res.json(await auditorium_type.findByPk(dto.auditorium_type));
-                    });
+                await prisma.auditoriumType.update({
+                    where: { auditorium_type: dto.auditorium_type },
+                    data: { auditorium_typename: dto.auditorium_typename }
+                }).then(async () => res.json(await prisma.auditoriumType.findUnique({ where: { auditorium_type: dto.auditorium_type } })));
             }
         }
         catch (err) { this.sendError(res, err); }
     }
 
+
     updateAuditorium = async (res, dto) => {
         try {
-            const auditoriumToUpdate = await auditorium.findByPk(dto.auditorium);
-            const typeToUpdate = await auditorium_type.findByPk(dto.auditorium_type);
+            const auditoriumToUpdate = await prisma.auditorium.findUnique({ where: { auditorium: dto.auditorium } });
+            const typeToUpdate = await prisma.auditoriumType.findUnique({ where: { auditorium_type: dto.auditorium_type } });
+
             if (!auditoriumToUpdate)
                 this.sendCustomError(res, 404, `Cannot find auditorium = ${dto.auditorium}`);
             else if (!typeToUpdate)
                 this.sendCustomError(res, 404, `Cannot find auditorium_type = ${dto.auditorium_type}`);
             else {
-                await auditorium.update(dto, { where: { auditorium: dto.auditorium } })
-                    .then(async () => {
-                        res.json(await auditorium.findByPk(dto.auditorium));
-                    });
+                await prisma.auditorium.update({
+                    where: { auditorium: dto.auditorium },
+                    data: {
+                        auditorium_name: dto.auditorium_name,
+                        auditorium_capacity: dto.auditorium_capacity,
+                        auditorium_type: dto.auditorium_type
+                    }
+                }).then(async () => res.json(await prisma.auditorium.findUnique({ where: { auditorium: dto.auditorium } })));
             }
         }
         catch (err) { this.sendError(res, err); }
@@ -379,7 +401,7 @@ export default class PrismaService {
 
 
 
-    // =================================  DELETE  =================================
+    // ==========================================  DELETE  ==========================================
 
     deleteFaculty = async (res, faculty_id) => {
         try {
@@ -454,7 +476,7 @@ export default class PrismaService {
 
 
 
-    // ===============================  TRANSACTION  ==============================
+    // ========================================  TRANSACTION  =======================================
 
     transaction = async res => {
         const trans = await sequelize.transaction({ isolationLevel: Transaction.ISOLATION_LEVELS.READ_UNCOMMITTED });
@@ -476,7 +498,7 @@ export default class PrismaService {
 
 
 
-    // ===============================  ERROR UTILS  ==============================
+    // ========================================  ERROR UTILS  =======================================
 
     sendError = async (res, err) => {
         if (err)
