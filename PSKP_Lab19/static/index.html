@@ -56,9 +56,21 @@
 
 
 
-    <div class="container d-flex align-items-start justify-content-between">
+
+    <div class="container d-flex align-items-start justify-content-evenly">
+
+        <div class="mb-3 me-5 mt-5" style="width: 53%;">
+            <div id="result"></div>
+            <div class="container d-flex align-items-start justify-content-evenly">
+                <button id="next" type="button" class="btn btn-primary" style="visibility: hidden;">
+                    Show next 10
+                </button>
+            </div>
+        </div>
+
+
         <div class="row pb-2" style="width: 40%;">
-            <h1 class="mt-4 ms-4">Welcome to Lab #19!</h1>
+            <h1 class="mt-4 ms-5">Welcome to Lab #19!</h1>
             <button type="button" class="btn btn-success mt-3" id="get">GET</button>
             <button type="button" class="btn btn-info mt-2" id="post">POST</button>
             <button type="button" class="btn btn-warning mt-2" id="put">PUT</button>
@@ -79,29 +91,66 @@
                 <input class="form-control" type="text" name="faculty" id="input_faculty">
             </div>
         </div>
-
-        <div id="result" class="mb-3 me-5" style="width: 50%; margin-top: 7%;"></div>
     </div>
 </body>
+
 
 <script>
     const baseUrl = '/api/pulpits/';
     const result = document.getElementById("result");
+    let arrayOfPulpits = [];
+    let countClicks = 0;
+    let start = 0;
+    let end = 10;
+
+
+
+    $("#next").click(function next() {
+        console.log('[before] next() countClicks: ', countClicks);
+        countClicks++;
+
+        let nextArray = arrayOfPulpits.slice(start + countClicks * 10, end + countClicks * 10);
+        console.log('next array: ', nextArray)
+        if (nextArray.length === 0) {
+            console.log('if statement');
+            $("#next").css("visibility", "hidden");
+        }
+        else {
+            result.innerHTML =
+                '<pre style="white-space: pre-wrap">' +
+                JSON.stringify(arrayOfPulpits.slice(start + countClicks * 10, end + countClicks * 10), null, 4) +
+                '</pre>';
+            $("#next").css("visibility", "visible");
+        }
+
+        console.log('[after] next() countClicks: ', countClicks);
+        console.log('==============================================================');
+    });
 
 
     $("#get").click(function get() {
         fetch(baseUrl)
             .then(responce => responce.json())
             .then(responseText => {
+                arrayOfPulpits = responseText;
+                const length = arrayOfPulpits.length;
+
+                console.log('start: ', start);
+                console.log('end: ', end);
+                console.log(`slice[${start}, ${end}}]:\n`, arrayOfPulpits.slice(start, end));
+                console.log('==============================================================');
+
                 result.innerHTML =
                     '<pre style="white-space: pre-wrap">' +
-                    JSON.stringify(responseText, null, 4) +
+                    JSON.stringify(arrayOfPulpits.slice(start, end), null, 4) +
                     '</pre>';
+                $("#next").css("visibility", "visible");
             });
     });
 
 
     $("#post").click(function post() {
+        $("#next").css("visibility", "hidden");
         const data = {
             pulpit: $("#input_pulpit").val(),
             pulpit_name: $("#input_pulpit_name").val(),
@@ -128,6 +177,7 @@
 
 
     $("#put").click(function post() {
+        $("#next").css("visibility", "hidden");
         const data = {
             pulpit: $("#input_pulpit").val(),
             pulpit_name: $("#input_pulpit_name").val(),
@@ -154,6 +204,7 @@
 
 
     $("#delete").click(function post() {
+        $("#next").css("visibility", "hidden");
         const pulpit = $("#input_pulpit").val();
         if (pulpit == '') {
             result.innerHTML = 'Enter pulpit! Bitch!';

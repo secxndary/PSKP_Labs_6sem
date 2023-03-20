@@ -10,7 +10,13 @@ export default class PrismaService {
 
     getFaculties = async res => res.json(await prisma.faculty.findMany());
 
-    getPulpits = async res => res.json(await prisma.pulpit.findMany());
+    getPulpits = async res => res.json(await prisma.pulpit.findMany({
+        select: {
+            pulpit: true,
+            pulpit_name: true,
+            _count: true,
+        }
+    }));
 
     getSubjects = async res => res.json(await prisma.subject.findMany());
 
@@ -215,6 +221,13 @@ export default class PrismaService {
                                     faculty,
                                     faculty_name
                                 }
+                                // ----- Пример клиентского запроса -----
+                                //  {
+                                //     "pulpit": "avocado5",
+                                //     "pulpit_name": "asdaf",
+                                //     "faculty": "qwezxc",
+                                //     "faculty_name": "hyeta"
+                                //  }
                             }
                         }
                     },
