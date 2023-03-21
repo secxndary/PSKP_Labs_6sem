@@ -513,7 +513,6 @@ export default class PrismaService {
     }
 
 
-
     deleteTeacher = async (res, teacher_id) => {
         try {
             const teacherToDelete = await prisma.teacher.findUnique({ where: { teacher: teacher_id } });
@@ -562,22 +561,39 @@ export default class PrismaService {
     // ===========================================  TRANSACTION  ==========================================
 
     transaction = async res => {
-        const trans = await sequelize.transaction({ isolationLevel: Transaction.ISOLATION_LEVELS.READ_UNCOMMITTED });
-        await auditorium.update(
-            { auditorium_capacity: 0 },
-            { where: {} },
-            { transaction: trans }
-        );
-        console.log('----- Waiting 10 seconds...');
+        try {
+            await prisma.$transaction(async prisma => {
+                await prisma.auditorium.updateMany({
+                    data: {
+                        auditorium_capacity: {
+                            increment: 100
+                        }
+                    }
+                });
+                // throwing error rolles back the transaction
+                throw new Error('Transaction rollback');
+            });
+        } catch (err) {
+            console.log(`${err}`);
+            this.sendCustomError(res, 200, `Transaction rolled back.`);
+            return;
+        }
+    };
 
-        setTimeout(async () => {
-            await trans.rollback();
-            console.log('----- Values rolled back.');
-        }, 10000);
 
-        res.json({ "message": "Check out console logging" });
+
+    // ============================================  FLUENT API  ==========================================
+
+    getPulpitsByFacultyFluent = async (res, faculty_id) => {
+        const pulpits = await prisma.faculty.findUnique({
+            where: { faculty: faculty_id }
+        })
+            .Pulpit();
+        if (pulpits)
+            res.json(pulpits)
+        else
+            this.sendCustomError(res, 404, `Cannot find faculty = ${faculty_id}`);
     }
-
 
 
 
@@ -596,6 +612,6 @@ export default class PrismaService {
     }
 
     sendCustomError = async (res, code, message) => {
-        res.status(code).json({ code: code, errorMessage: message });
+        res.status(code).json({ code, message });
     }
 }

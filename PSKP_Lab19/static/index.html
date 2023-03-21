@@ -64,7 +64,7 @@
                 <button id="prev" type="button" class="btn btn-primary" style="visibility: hidden;">
                     Show previous 10
                 </button>
-                <button id="page" class="btn btn-secondary" style="visibility: hidden;" disabled >1</button>
+                <button id="page" class="btn btn-secondary" style="visibility: hidden;" disabled>1</button>
                 <button id="next" type="button" class="btn btn-primary" style="visibility: hidden;">
                     Show next 10
                 </button>
@@ -75,10 +75,10 @@
 
         <div class="row pb-2" style="width: 40%;">
             <h1 class="mt-4 ms-5">Welcome to Lab #19!</h1>
-            <button type="button" class="btn btn-success mt-3" id="get">GET</button>
+            <button type="button" class="btn btn-success mt-3 nameDisable" id="get">GET</button>
             <button type="button" class="btn btn-info mt-2" id="post">POST</button>
-            <button type="button" class="btn btn-warning mt-2" id="put">PUT</button>
-            <button type="button" class="btn btn-danger mt-2 mb-2" id="delete">DELETE</button>
+            <button type="button" class="btn btn-warning mt-2 nameDisable" id="put">PUT</button>
+            <button type="button" class="btn btn-danger mt-2 mb-2 nameDisable" id="delete">DELETE</button>
 
             <div class="form-group mt-4">
                 <label for="pulpit">Pulpit</label>
@@ -93,6 +93,12 @@
             <div class="form-group mt-2">
                 <label for="faculty">Faculty</label>
                 <input class="form-control" type="text" name="faculty" id="input_faculty">
+            </div>
+
+            <div class="form-group mt-2">
+                <label for="faculty_name">Faculty name</label>
+                <input class="form-control" type="text" name="faculty_name" id="input_faculty_name"
+                    placeholder="Enter value in POST request to add a faculty_name">
             </div>
         </div>
     </div>
@@ -116,26 +122,19 @@
 
         let nextArray = arrayOfPulpits.slice(start + (countClicks + 1) * 10, end + (countClicks + 1) * 10);
         console.log('next array: ', nextArray)
-        if (nextArray.length === 0) {
-            console.log('if statement');
-            page.innerHTML = countClicks + 1;
-            result.innerHTML =
-                '<pre style="white-space: pre-wrap">' +
-                JSON.stringify(arrayOfPulpits.slice(start + countClicks * 10, end + countClicks * 10), null, 4) +
-                '</pre>';
-            $("#next").css("visibility", "hidden");
-            $("#prev").css("visibility", "visible");
-        }
-        else {
-            page.innerHTML = countClicks + 1;
-            result.innerHTML =
-                '<pre style="white-space: pre-wrap">' +
-                JSON.stringify(arrayOfPulpits.slice(start + countClicks * 10, end + countClicks * 10), null, 4) +
-                '</pre>';
-            $("#next").css("visibility", "visible");
-            $("#prev").css("visibility", "visible");
-        }
 
+        page.innerHTML = countClicks + 1;
+        result.innerHTML =
+            '<pre style="white-space: pre-wrap">' +
+            JSON.stringify(arrayOfPulpits.slice(start + countClicks * 10, end + countClicks * 10), null, 4) +
+            '</pre>';
+
+        if (nextArray.length === 0)
+            $("#next").css("visibility", "hidden");
+        else
+            $("#next").css("visibility", "visible");
+
+        $("#prev").css("visibility", "visible");
         console.log('[after] next() countClicks: ', countClicks);
         console.log('==============================================================');
     });
@@ -148,26 +147,19 @@
 
         let prevArray = arrayOfPulpits.slice(start + (countClicks - 1) * 10, end + (countClicks - 1) * 10);
         console.log('prev array: ', prevArray)
-        if (prevArray.length === 0) {
-            console.log('if statement');
-            page.innerHTML = countClicks + 1;
-            result.innerHTML =
-                '<pre style="white-space: pre-wrap">' +
-                JSON.stringify(arrayOfPulpits.slice(start + countClicks * 10, end + countClicks * 10), null, 4) +
-                '</pre>';
-            $("#prev").css("visibility", "hidden");
-            $("#next").css("visibility", "visible");
-        }
-        else {
-            page.innerHTML = countClicks + 1;
-            result.innerHTML =
-                '<pre style="white-space: pre-wrap">' +
-                JSON.stringify(arrayOfPulpits.slice(start + countClicks * 10, end + countClicks * 10), null, 4) +
-                '</pre>';
-            $("#prev").css("visibility", "visible");
-            $("#next").css("visibility", "visible");
-        }
 
+        page.innerHTML = countClicks + 1;
+        result.innerHTML =
+            '<pre style="white-space: pre-wrap">' +
+            JSON.stringify(arrayOfPulpits.slice(start + countClicks * 10, end + countClicks * 10), null, 4) +
+            '</pre>';
+
+        if (prevArray.length === 0)
+            $("#prev").css("visibility", "hidden");
+        else
+            $("#prev").css("visibility", "visible");
+
+        $("#next").css("visibility", "visible");
         console.log('[after] prev() countClicks: ', countClicks);
         console.log('==============================================================');
     });
@@ -192,8 +184,11 @@
                     '<pre style="white-space: pre-wrap">' +
                     JSON.stringify(arrayOfPulpits.slice(start, end), null, 4) +
                     '</pre>';
+
                 $("#next").css("visibility", "visible");
                 $("#page").css("visibility", "visible");
+                $("#prev").css("visibility", "hidden");
+                page.innerHTML = 1;
             });
     });
 
@@ -208,7 +203,8 @@
         const data = {
             pulpit: $("#input_pulpit").val(),
             pulpit_name: $("#input_pulpit_name").val(),
-            faculty: $("#input_faculty").val()
+            faculty: $("#input_faculty").val(),
+            faculty_name: $("#input_faculty_name").val()
         }
         if (data.faculty == '' || data.pulpit == '' || data.pulpit_name == '') {
             result.innerHTML = 'Fill all inputs! Bitch!';
@@ -228,6 +224,7 @@
                     '</pre>';
             });
     });
+
 
 
     $("#put").click(function post() {
@@ -286,6 +283,14 @@
                     '</pre>';
             });
     })
+
+
+
+    $(document).on({
+        mouseenter: function () { $('#input_faculty_name').prop("disabled", (_, val) => val = true); },
+        mouseleave: function () { $('#input_faculty_name').prop("disabled", (_, val) => val = false); }
+    }, ".nameDisable");
+
 </script>
 
 </html>

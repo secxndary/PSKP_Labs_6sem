@@ -314,8 +314,10 @@ export default class SequelizeService {
         const trans = await sequelize.transaction({ isolationLevel: Transaction.ISOLATION_LEVELS.READ_UNCOMMITTED });
         await auditorium.update(
             { auditorium_capacity: 0 },
-            { where: {} },
-            { transaction: trans }
+            {
+                where: {},
+                transaction: trans
+            }
         );
         console.log('----- Waiting 10 seconds...');
 

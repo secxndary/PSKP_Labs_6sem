@@ -24,7 +24,8 @@ app.get(prefix + '/faculties', (req, res) => service.getFaculties(res))
     .get(prefix + '/puplitsWithoutTeachers', (req, res) => service.getPuplitsWithoutTeachers(res))
     .get(prefix + '/pulpitsWithVladimir', (req, res) => service.getPulpitsWithVladimir(res))
     .get(prefix + '/auditoriumsSameCount', (req, res) => service.getAuditoriumsWithSameTypeAndCapacity(res))
-    .get(prefix + '/transaction', (req, res) => service.transaction(res));
+    .get(prefix + '/transaction', (req, res) => service.transaction(res))
+    .get(prefix + '/fluent/:faculty_id', (req, res) => service.getPulpitsByFacultyFluent(res, req.params['faculty_id']));
 
 app.post(prefix + '/faculties', (req, res) => service.insertFaculty(res, req.body))
     .post(prefix + '/pulpits', (req, res) => service.insertPulpit(res, req.body))
