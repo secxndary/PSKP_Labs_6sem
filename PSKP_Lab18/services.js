@@ -1,13 +1,18 @@
-import { Sequelize, Transaction } from 'sequelize';
+import { Sequelize, Op, Transaction } from 'sequelize';
 import { faculty, pulpit, subject, teacher, auditorium_type, auditorium } from './models/models.js';
 const sequelize = new Sequelize('sequel', 'postgres', '1111', {
     host: 'localhost',
     dialect: 'postgres',
-    define: { timestamps: false },
+    define: {
+        timestamps: false,
+        hooks: {
+            beforeDestroy() { console.log('[WARN] Destroy called') }
+        }
+    },
     pool: {
-        max: 5,
+        max: 10,
         min: 1,
-        acquire: 30000
+        idle: 10000
     }
 });
 
@@ -311,22 +316,27 @@ export default class SequelizeService {
     // ===============================  TRANSACTION  ==============================
 
     transaction = async res => {
-        const trans = await sequelize.transaction({ isolationLevel: Transaction.ISOLATION_LEVELS.READ_UNCOMMITTED });
-        await auditorium.update(
-            { auditorium_capacity: 0 },
-            {
-                where: {},
-                transaction: trans
-            }
-        );
-        console.log('----- Waiting 10 seconds...');
-
-        setTimeout(async () => {
-            await trans.rollback();
-            console.log('----- Values rolled back.');
-        }, 10000);
-
-        res.json({ "message": "Check out console logging" });
+        sequelize.transaction({ isolationLevel: Transaction.ISOLATION_LEVELS.READ_UNCOMMITTED })
+            .then(trans => {
+                auditorium.update(
+                    { auditorium_capacity: 0 },
+                    {
+                        where: { auditorium_capacity: { [Op.gte]: 0 } },
+                        transaction: trans
+                    })
+                    .then(() => {
+                        res.json({ 'message': 'Check out console logs' });
+                        console.log('----- All capacities changed to 0');
+                        console.log('----- Waiting 10 seconds...');
+                        setTimeout(() => {
+                            trans.rollback();
+                            console.log('----- Values rolled back');
+                        }, 10000);
+                    }).catch(err => {
+                        trans.rollback();
+                        console.log(err);
+                    });
+            }).catch(err => console.log(err));
     }
 
 

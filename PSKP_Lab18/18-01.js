@@ -10,11 +10,16 @@ const service = new SequelizeService;
 const sequelize = new Sequelize('sequel', 'postgres', '1111', {
     host: 'localhost',
     dialect: 'postgres',
-    define: { timestamps: false },
+    define: {
+        timestamps: false,
+        hooks: {
+            beforeDestroy() { console.log('[WARN] Destroy called') }
+        }
+    },
     pool: {
-        max: 5,
+        max: 10,
         min: 1,
-        acquire: 30000
+        idle: 10000
     }
 });
 
