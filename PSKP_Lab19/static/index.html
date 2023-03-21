@@ -60,12 +60,16 @@
     <div class="container d-flex align-items-start justify-content-evenly">
 
         <div class="mb-3 me-5 mt-5" style="width: 53%;">
-            <div id="result"></div>
             <div class="container d-flex align-items-start justify-content-evenly">
+                <button id="prev" type="button" class="btn btn-primary" style="visibility: hidden;">
+                    Show previous 10
+                </button>
+                <button id="page" class="btn btn-secondary" style="visibility: hidden;" disabled >1</button>
                 <button id="next" type="button" class="btn btn-primary" style="visibility: hidden;">
                     Show next 10
                 </button>
             </div>
+            <div id="result"></div>
         </div>
 
 
@@ -98,6 +102,7 @@
 <script>
     const baseUrl = '/api/pulpits/';
     const result = document.getElementById("result");
+    const page = document.getElementById("page");
     let arrayOfPulpits = [];
     let countClicks = 0;
     let start = 0;
@@ -109,18 +114,26 @@
         console.log('[before] next() countClicks: ', countClicks);
         countClicks++;
 
-        let nextArray = arrayOfPulpits.slice(start + countClicks * 10, end + countClicks * 10);
+        let nextArray = arrayOfPulpits.slice(start + (countClicks + 1) * 10, end + (countClicks + 1) * 10);
         console.log('next array: ', nextArray)
         if (nextArray.length === 0) {
             console.log('if statement');
+            page.innerHTML = countClicks + 1;
+            result.innerHTML =
+                '<pre style="white-space: pre-wrap">' +
+                JSON.stringify(arrayOfPulpits.slice(start + countClicks * 10, end + countClicks * 10), null, 4) +
+                '</pre>';
             $("#next").css("visibility", "hidden");
+            $("#prev").css("visibility", "visible");
         }
         else {
+            page.innerHTML = countClicks + 1;
             result.innerHTML =
                 '<pre style="white-space: pre-wrap">' +
                 JSON.stringify(arrayOfPulpits.slice(start + countClicks * 10, end + countClicks * 10), null, 4) +
                 '</pre>';
             $("#next").css("visibility", "visible");
+            $("#prev").css("visibility", "visible");
         }
 
         console.log('[after] next() countClicks: ', countClicks);
@@ -128,7 +141,42 @@
     });
 
 
+
+    $("#prev").click(function prev() {
+        console.log('[before] prev() countClicks: ', countClicks);
+        countClicks--;
+
+        let prevArray = arrayOfPulpits.slice(start + (countClicks - 1) * 10, end + (countClicks - 1) * 10);
+        console.log('prev array: ', prevArray)
+        if (prevArray.length === 0) {
+            console.log('if statement');
+            page.innerHTML = countClicks + 1;
+            result.innerHTML =
+                '<pre style="white-space: pre-wrap">' +
+                JSON.stringify(arrayOfPulpits.slice(start + countClicks * 10, end + countClicks * 10), null, 4) +
+                '</pre>';
+            $("#prev").css("visibility", "hidden");
+            $("#next").css("visibility", "visible");
+        }
+        else {
+            page.innerHTML = countClicks + 1;
+            result.innerHTML =
+                '<pre style="white-space: pre-wrap">' +
+                JSON.stringify(arrayOfPulpits.slice(start + countClicks * 10, end + countClicks * 10), null, 4) +
+                '</pre>';
+            $("#prev").css("visibility", "visible");
+            $("#next").css("visibility", "visible");
+        }
+
+        console.log('[after] prev() countClicks: ', countClicks);
+        console.log('==============================================================');
+    });
+
+
+
     $("#get").click(function get() {
+        countClicks = 0;
+
         fetch(baseUrl)
             .then(responce => responce.json())
             .then(responseText => {
@@ -145,12 +193,18 @@
                     JSON.stringify(arrayOfPulpits.slice(start, end), null, 4) +
                     '</pre>';
                 $("#next").css("visibility", "visible");
+                $("#page").css("visibility", "visible");
             });
     });
 
 
+
     $("#post").click(function post() {
         $("#next").css("visibility", "hidden");
+        $("#prev").css("visibility", "hidden");
+        $("#page").css("visibility", "hidden");
+        countClicks = 0;
+
         const data = {
             pulpit: $("#input_pulpit").val(),
             pulpit_name: $("#input_pulpit_name").val(),
@@ -178,6 +232,10 @@
 
     $("#put").click(function post() {
         $("#next").css("visibility", "hidden");
+        $("#prev").css("visibility", "hidden");
+        $("#page").css("visibility", "hidden");
+        countClicks = 0;
+
         const data = {
             pulpit: $("#input_pulpit").val(),
             pulpit_name: $("#input_pulpit_name").val(),
@@ -203,8 +261,13 @@
     });
 
 
+
     $("#delete").click(function post() {
         $("#next").css("visibility", "hidden");
+        $("#prev").css("visibility", "hidden");
+        $("#page").css("visibility", "hidden");
+        countClicks = 0;
+
         const pulpit = $("#input_pulpit").val();
         if (pulpit == '') {
             result.innerHTML = 'Enter pulpit! Bitch!';

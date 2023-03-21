@@ -14,7 +14,9 @@ export default class PrismaService {
         select: {
             pulpit: true,
             pulpit_name: true,
-            _count: true,
+            _count: {
+                select: { Teacher: true }
+            }
         }
     }));
 
