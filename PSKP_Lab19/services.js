@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import { where } from "sequelize";
 const prisma = new PrismaClient();
 
 
@@ -172,7 +171,7 @@ export default class PrismaService {
                                     pulpit: pulpitData.pulpit,
                                     pulpit_name: pulpitData.pulpit_name
                                 })),
-                                // skipDuplicates: true
+                                skipDuplicates: true
                                 // если это раскомментить, то при передаче клиентом палпитов которые уже есть в бд,
                                 // сервер вернёт просто [] типа ничего не создалось, и создаст только факультет.
                                 // если же не добавить skipDublicates, то если палпит будет нарушать праймари кей,  

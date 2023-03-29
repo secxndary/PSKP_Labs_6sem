@@ -1,0 +1,58 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Author {
+    id            String   @id(map: "pk_dbo_authors") @db.Uuid
+    name          String   @db.VarChar(100)
+    surname       String   @db.VarChar(100)
+    country       String?  @db.VarChar(100)
+    date_of_birth DateTime @db.Date
+    //
+    Book          Book[]
+}
+
+model Book {
+    id        String  @id(map: "pk_dbo_books") @db.Uuid
+    author_id String  @db.Uuid
+    title     String  @db.VarChar
+    pages     Int
+    //
+    Author    Author  @relation(fields: [author_id], references: [id])
+    Order     Order[]
+    Genre     Genre[]
+}
+
+model Customer {
+    id           String  @id(map: "pk_dbo_customers") @db.Uuid
+    company_name String  @db.VarChar
+    address      String? @db.VarChar
+    phone        String? @db.VarChar(20)
+    //
+    Order        Order[]
+}
+
+model Genre {
+    id          String  @id(map: "pk_dbo_genres") @db.Uuid
+    name        String  @db.VarChar(100)
+    description String? @db.VarChar
+    //
+    Book        Book[]
+}
+
+model Order {
+    id          String   @id(map: "pk_dbo_orders") @db.Uuid
+    book_id     String   @db.Uuid
+    customer_id String   @db.Uuid
+    order_date  DateTime @db.Date
+    qty         Int
+    amount      Decimal  @db.Money
+    //
+    Book        Book     @relation(fields: [book_id], references: [id])
+    Customer    Customer @relation(fields: [customer_id], references: [id])
+}
