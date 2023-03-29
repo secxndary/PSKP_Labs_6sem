@@ -1,58 +1,132 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
 }
 
-model Author {
-    id            String   @id(map: "pk_dbo_authors") @db.Uuid
-    name          String   @db.VarChar(100)
-    surname       String   @db.VarChar(100)
-    country       String?  @db.VarChar(100)
-    date_of_birth DateTime @db.Date
-    //
-    Book          Book[]
+model emailsenderdata {
+  id       Int        @id(map: "PK_dbo_emailsenderdata") @default(autoincrement())
+  email    String     @unique(map: "UQ_dbo_emailsenderdata_email") @db.NVarChar(100)
+  password String     @db.NVarChar(100)
+  sendmail sendmail[]
 }
 
-model Book {
-    id        String  @id(map: "pk_dbo_books") @db.Uuid
-    author_id String  @db.Uuid
-    title     String  @db.VarChar
-    pages     Int
-    //
-    Author    Author  @relation(fields: [author_id], references: [id])
-    Order     Order[]
-    Genre     Genre[]
+model albums {
+  id           Int        @id(map: "PK_dbo_albums") @default(autoincrement())
+  title        String     @db.NVarChar(Max)
+  release_date DateTime?  @db.Date
+  artist_id    Int
+  label_id     Int?
+  artists      artists    @relation(fields: [artist_id], references: [id], onUpdate: NoAction, map: "FK_dbo_albums_dbo_artists")
+  providers    providers? @relation(fields: [label_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_dbo_albums_dbo_providers")
+  songs        songs[]
 }
 
-model Customer {
-    id           String  @id(map: "pk_dbo_customers") @db.Uuid
-    company_name String  @db.VarChar
-    address      String? @db.VarChar
-    phone        String? @db.VarChar(20)
-    //
-    Order        Order[]
+model artists {
+  id        Int      @id(map: "PK_dbo_artists") @default(autoincrement())
+  nick_name String   @db.NVarChar(Max)
+  real_name String?  @db.NVarChar(Max)
+  users_id  Int?
+  albums    albums[]
+  users     users?   @relation(fields: [users_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_dbo_artists_dbo_users")
+  songs     songs[]
 }
 
-model Genre {
-    id          String  @id(map: "pk_dbo_genres") @db.Uuid
-    name        String  @db.VarChar(100)
-    description String? @db.VarChar
-    //
-    Book        Book[]
+model orders {
+  id                           Int       @id(map: "PK_dbo_orders") @default(autoincrement())
+  order_datetime               DateTime?
+  users_id                     Int
+  task_id                      Int
+  status                       Int
+  status_orders_statusTostatus status    @relation("orders_statusTostatus", fields: [status], references: [id], onUpdate: NoAction, map: "FK_dbo_orders_dbo_status")
+  tasks                        tasks     @relation(fields: [task_id], references: [id], onUpdate: NoAction, map: "FK_dbo_orders_dbo_tasks")
+  users                        users     @relation(fields: [users_id], references: [id], onUpdate: NoAction, map: "FK_dbo_orders_dbo_users")
 }
 
-model Order {
-    id          String   @id(map: "pk_dbo_orders") @db.Uuid
-    book_id     String   @db.Uuid
-    customer_id String   @db.Uuid
-    order_date  DateTime @db.Date
-    qty         Int
-    amount      Decimal  @db.Money
-    //
-    Book        Book     @relation(fields: [book_id], references: [id])
-    Customer    Customer @relation(fields: [customer_id], references: [id])
+model providers {
+  id           Int         @id(map: "PK_dbo_providers") @default(autoincrement())
+  login        String      @unique(map: "UQ_dbo_providers_login") @db.NVarChar(50)
+  password     String      @db.NVarChar(50)
+  company_name String      @db.NVarChar(100)
+  role_id      Int
+  address      String?     @db.NVarChar(Max)
+  trade_margin Int?
+  albums       albums[]
+  roles        roles       @relation(fields: [role_id], references: [id], onUpdate: NoAction, map: "FK_dbo_providers_dbo_roles")
+  schedules    schedules[]
+  tasks        tasks[]
+}
+
+model roles {
+  id        Int         @id(map: "PK_dbo_roles") @default(autoincrement())
+  name      String?     @db.NVarChar(50)
+  providers providers[]
+}
+
+model schedules {
+  id           Int       @id(map: "PK_dbo_schedules") @default(autoincrement())
+  opening_time DateTime? @db.Time
+  closing_time DateTime? @db.Time
+  provider_id  Int
+  providers    providers @relation(fields: [provider_id], references: [id], onUpdate: NoAction, map: "FK_dbo_schedules_dbo_providers")
+}
+
+model sendmail {
+  id                Int             @id(map: "PK_dbo_sendmail") @default(autoincrement())
+  sender_email_id   Int
+  receiver_email_id Int
+  subject           String?         @db.NVarChar(Max)
+  message_text      String          @db.NVarChar(Max)
+  emailsenderdata   emailsenderdata @relation(fields: [sender_email_id], references: [id], onUpdate: NoAction, map: "FK_dbo_sendmail_dbo_emailsenderdata")
+  users             users           @relation(fields: [receiver_email_id], references: [id], onUpdate: NoAction, map: "FK_dbo_sendmail_dbo_users")
+}
+
+model songs {
+  id         Int      @id(map: "PK_dbo_songs") @default(autoincrement())
+  title      String?  @db.NVarChar(Max)
+  album_id   Int?
+  artist_id  Int?
+  audio_file Bytes?
+  albums     albums?  @relation(fields: [album_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_dbo_songs_dbo_albums")
+  artists    artists? @relation(fields: [artist_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_dbo_songs_dbo_artists")
+}
+
+model status {
+  id                           Int      @id(map: "PK_dbo_status") @default(autoincrement())
+  name                         String?  @db.NVarChar(50)
+  orders_orders_statusTostatus orders[] @relation("orders_statusTostatus")
+}
+
+model sysdiagrams {
+  name         String @db.NVarChar(128)
+  principal_id Int
+  diagram_id   Int    @id(map: "PK__sysdiagr__C2B05B61CE8544F9") @default(autoincrement())
+  version      Int?
+  definition   Bytes?
+
+  @@unique([principal_id, name], map: "UK_principal_name")
+}
+
+model tasks {
+  id          Int       @id(map: "PK_dbo_tasks") @default(autoincrement())
+  name        String    @db.NVarChar(Max)
+  duration    Int?
+  price       Int
+  provider_id Int
+  orders      orders[]
+  providers   providers @relation(fields: [provider_id], references: [id], onUpdate: NoAction, map: "FK_dbo_tasks_dbo_providers")
+}
+
+model users {
+  id       Int        @id(map: "PK_dbo_users") @default(autoincrement())
+  login    String     @unique(map: "UQ_dbo_users_login") @db.NVarChar(50)
+  password String     @db.NVarChar(50)
+  email    String     @unique(map: "UQ_dbo_users_email") @db.NVarChar(50)
+  is_admin Boolean
+  artists  artists[]
+  orders   orders[]
+  sendmail sendmail[]
 }
