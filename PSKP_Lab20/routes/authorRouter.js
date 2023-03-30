@@ -1,13 +1,13 @@
-import express from 'express';
-import AuthorController from '../controllers/authorController.js';
+const express = require('express');
+const AuthorController = require('../controllers/authorController.js');
 
 
-export default () => {
+module.exports = (req, res) => {
     const controller = new AuthorController();
     const router = express.Router();
 
     console.log('router')
-    router.get('/', () => controller.getAuthors());
+    router.get('/', (req, res) => controller.getAuthors(req, res).then(res => console.log(res)));
 
     return router;
 }
