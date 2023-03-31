@@ -1,14 +1,12 @@
-const { PrismaClient } = require("@prisma/client");
+const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-
 
 module.exports = class AuthorController {
     getAuthors = async (req, res) => {
         const authors = await prisma.author.findMany({});
-        console.log({ authors, });
         console.log('controller');
-        res.send(JSON.stringify(authors, null, 4));
-        // res.render('faculty.hbs', { layout: false, data: faculties });
+        // res.send(JSON.stringify(authors, null, 4));
+        res.render('author.hbs', { layout: false, data: authors, kek: JSON.stringify(authors, null, 4) });
     }
 
     getAuthor = async (res, id) => { }
