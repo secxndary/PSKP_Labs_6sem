@@ -8,13 +8,14 @@ const hbs = handlebar.create({ extname: '.hbs' });
 const app = express();
 
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.engine('.hbs', hbs.engine);
+app.listen(PORT, () => console.log(`[OK] Server running at localhost:${PORT}/\n`));
+app.use(express.urlencoded({ extended: true }));
+// app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.static(path.join(__dirname, 'static')));
+app.use(express.json());
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', '.hbs');
-app.listen(PORT, () => console.log(`[OK] Server running at localhost:${PORT}/\n`));
+app.engine('.hbs', hbs.engine);
 
 
 app.use('/author', (req, res) => { authorRouter(req, res) });
-app.get('/', (req, res) => { res.render('author', { layout: null, kek: 'hello world ebat' }) });
-

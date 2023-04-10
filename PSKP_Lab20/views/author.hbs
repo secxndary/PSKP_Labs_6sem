@@ -1,1 +1,125 @@
-<pre>{{data}}</pre>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>PSKP-20</title>
+    <link rel="stylesheet" href="/bootstrap.css" type="text/css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+</head>
+
+<body>
+
+    <div class="container d-flex align-items-start justify-content-between" style="margin-top: 4%;">
+        <div class="row pb-2" style="width: 40%;">
+            <button type="button" class="btn btn-success mt-2" id="get">GET</button>
+            <button type="button" class="btn btn-info mt-2" id="post">POST</button>
+            <button type="button" class="btn btn-warning mt-2" id="put">PUT</button>
+            <button type="button" class="btn btn-danger mt-2 mb-2" id="delete">DELETE</button>
+
+            <div class="form-group mt-4">
+                <label for="name">Name</label>
+                <input class="form-control" type="text" name="name" id="input_name" required>
+            </div>
+
+            <div class="form-group mt-2">
+                <label for="surname">Surname</label>
+                <input class="form-control" type="text" name="surname" id="input_surname" required>
+            </div>
+
+            <div class="form-group mt-2">
+                <label for="country">Country</label>
+                <input class="form-control" type="text" name="country" id="input_country">
+            </div>
+
+            <div class="form-group mt-2">
+                <label for="date_of_birth">Date of Birth</label>
+                <input class="form-control" type="text" name="date_of_birth" id="input_date_of_birth">
+            </div>
+        </div>
+
+        <pre id="result" class="mb-3 me-5" style="width: 50%;">{{{data}}}</pre>
+    </div>
+
+
+
+    <script>
+        const baseUrl = '/author';
+        const result = document.getElementById("result");
+
+
+        $("#get").click(function get() {
+            window.location.href = baseUrl;
+        });
+
+
+        $("#post").click(function post() {
+            const data = {
+                name: $("#input_name").val(),
+                surname: $("#input_surname").val(),
+                country: $("#input_country").val(),
+                date_of_birth: $("#input_date_of_birth").val()
+            }
+
+            console.log(data);
+            if (data.name == '' || data.surname == '' || data.date_of_birth == '') {
+                result.innerHTML = 'Fill all inputs! Bitch!';
+                return;
+            }
+
+            fetch(baseUrl, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: { 'content-type': 'application/json' }
+            });
+        });
+
+
+        $("#put").click(function post() {
+            const data = {
+                pulpit: $("#input_pulpit").val(),
+                pulpit_name: $("#input_pulpit_name").val(),
+                faculty: $("#input_faculty").val()
+            }
+            if (data.faculty == '' || data.pulpit == '' || data.pulpit_name == '') {
+                result.innerHTML = 'Fill all inputs! Bitch!';
+                return;
+            }
+
+            fetch(baseUrl, {
+                method: 'PUT',
+                body: JSON.stringify(data),
+                headers: { 'content-type': 'application/json' }
+            })
+                .then(responce => responce.json())
+                .then(responseText => {
+                    result.innerHTML =
+                        '<pre style="white-space: pre-wrap">' +
+                        JSON.stringify(responseText, null, 4) +
+                        '</pre>';
+                });
+        });
+
+
+        $("#delete").click(function post() {
+            const pulpit = $("#input_pulpit").val();
+            if (pulpit == '') {
+                result.innerHTML = 'Enter pulpit! Bitch!';
+                return;
+            }
+
+            fetch(baseUrl + pulpit, {
+                method: 'DELETE',
+                headers: { 'content-type': 'application/json' }
+            })
+                .then(responce => responce.json())
+                .then(responseText => {
+                    result.innerHTML =
+                        '<pre style="white-space: pre-wrap">' +
+                        JSON.stringify(responseText, null, 4) +
+                        '</pre>';
+                });
+        })
+    </script>
+
+</html>
