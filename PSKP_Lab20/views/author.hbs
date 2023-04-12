@@ -61,7 +61,6 @@
         $("#post").click(function create() {
 
             const data = {
-                id: $("#input_id").val() != "" ? $("#input_id").val() : undefined,
                 name: $("#input_name").val(),
                 surname: $("#input_surname").val(),
                 country: $("#input_country").val() != "" ? $("#input_country").val() : null,
@@ -87,6 +86,7 @@
         });
 
 
+
         $("#put").click(function put() {
             console.log('put')
 
@@ -109,12 +109,9 @@
                 method: 'PUT',
                 body: JSON.stringify(data),
                 headers: { 'content-type': 'application/json' }
-            }).then(res => {
-                console.log(res);
-                if (res.redirected) {
-                    window.location.href = res.url;
-                }
-            });
+            })
+                .then(response => response.json())
+                .then(dto => { window.location.href = `${baseUrl}/${dto.id}`; });
         });
 
 
