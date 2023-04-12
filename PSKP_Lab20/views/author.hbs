@@ -18,6 +18,11 @@
             <button type="button" class="btn btn-danger mt-2 mb-2" id="delete">DELETE</button>
 
             <div class="form-group mt-4">
+                <label for="id">Id</label>
+                <input class="form-control" type="text" name="id" id="input_id">
+            </div>
+
+            <div class="form-group mt-2">
                 <label for="name">Name</label>
                 <input class="form-control" type="text" name="name" id="input_name" required>
             </div>
@@ -34,7 +39,7 @@
 
             <div class="form-group mt-2">
                 <label for="date_of_birth">Date of Birth</label>
-                <input class="form-control" type="text" name="date_of_birth" id="input_date_of_birth">
+                <input class="form-control" type="date" name="date_of_birth" id="input_date_of_birth">
             </div>
         </div>
 
@@ -53,17 +58,20 @@
         });
 
 
-        $("#post").click(function post() {
+        $("#post").click(function create() {
+
             const data = {
+                id: $("#input_id").val() != "" ? $("#input_id").val() : undefined,
                 name: $("#input_name").val(),
                 surname: $("#input_surname").val(),
-                country: $("#input_country").val(),
+                country: $("#input_country").val() != "" ? $("#input_country").val() : null,
                 date_of_birth: $("#input_date_of_birth").val()
             }
 
-            console.log(data);
+            console.log(data.date_of_birth);
+
             if (data.name == '' || data.surname == '' || data.date_of_birth == '') {
-                result.innerHTML = 'Fill all inputs! Bitch!';
+                result.innerHTML = 'Enter name, surname and date_of_birth! Bitch!';
                 return;
             }
 
@@ -71,18 +79,29 @@
                 method: 'POST',
                 body: JSON.stringify(data),
                 headers: { 'content-type': 'application/json' }
+            }).then(res => {
+                if (res.redirected) {
+                    window.location.href = res.url;
+                }
             });
         });
 
 
-        $("#put").click(function post() {
+        $("#put").click(function put() {
+            console.log('put')
+
             const data = {
-                pulpit: $("#input_pulpit").val(),
-                pulpit_name: $("#input_pulpit_name").val(),
-                faculty: $("#input_faculty").val()
+                id: $("#input_id").val(),
+                name: $("#input_name").val() != "" ? $("#input_name").val() : undefined,
+                surname: $("#input_surname").val() != "" ? $("#input_surname").val() : undefined,
+                country: $("#input_country").val() != "" ? $("#input_country").val() : undefined,
+                date_of_birth: $("#input_date_of_birth").val() != "" ? $("#input_date_of_birth").val() : undefined
             }
-            if (data.faculty == '' || data.pulpit == '' || data.pulpit_name == '') {
-                result.innerHTML = 'Fill all inputs! Bitch!';
+
+            console.log({ data, });
+
+            if (data.id == '') {
+                result.innerHTML = 'Enter ID! Bitch!';
                 return;
             }
 
@@ -90,36 +109,35 @@
                 method: 'PUT',
                 body: JSON.stringify(data),
                 headers: { 'content-type': 'application/json' }
-            })
-                .then(responce => responce.json())
-                .then(responseText => {
-                    result.innerHTML =
-                        '<pre style="white-space: pre-wrap">' +
-                        JSON.stringify(responseText, null, 4) +
-                        '</pre>';
-                });
+            }).then(res => {
+                console.log(res);
+                if (res.redirected) {
+                    window.location.href = res.url;
+                }
+            });
         });
 
 
-        $("#delete").click(function post() {
-            const pulpit = $("#input_pulpit").val();
-            if (pulpit == '') {
-                result.innerHTML = 'Enter pulpit! Bitch!';
+
+        $("#delete").click(function remove() {
+
+            const id = $("#input_id").val() != "" ? $("#input_id").val() : undefined;
+            console.log(id);
+            if (id == undefined || id == '') {
+                result.innerHTML = 'Enter ID! Bitch!';
                 return;
             }
 
-            fetch(baseUrl + pulpit, {
+            fetch(`${baseUrl}/${id}`, {
                 method: 'DELETE',
                 headers: { 'content-type': 'application/json' }
-            })
-                .then(responce => responce.json())
-                .then(responseText => {
-                    result.innerHTML =
-                        '<pre style="white-space: pre-wrap">' +
-                        JSON.stringify(responseText, null, 4) +
-                        '</pre>';
-                });
-        })
+            }).then(res => {
+                if (res.redirected) {
+                    window.location.href = res.url;
+                }
+            });
+        });
+
     </script>
 
 </html>
