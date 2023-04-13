@@ -9,7 +9,6 @@
 </head>
 
 <body>
-
     <div class="container d-flex align-items-start justify-content-between" style="margin-top: 4%;">
         <div class="row pb-2" style="width: 40%;">
             <button type="button" class="btn btn-success mt-2" id="get">GET</button>
@@ -28,18 +27,8 @@
             </div>
 
             <div class="form-group mt-2">
-                <label for="surname">Surname</label>
-                <input class="form-control" type="text" name="surname" id="input_surname" required>
-            </div>
-
-            <div class="form-group mt-2">
-                <label for="country">Country</label>
-                <input class="form-control" type="text" name="country" id="input_country">
-            </div>
-
-            <div class="form-group mt-2">
-                <label for="date_of_birth">Date of Birth</label>
-                <input class="form-control" type="date" name="date_of_birth" id="input_date_of_birth">
+                <label for="description">Description</label>
+                <input class="form-control" type="text" name="description" id="input_description">
             </div>
         </div>
 
@@ -49,7 +38,7 @@
 
 
     <script>
-        const baseUrl = '/author';
+        const baseUrl = '/genre';
         const result = document.getElementById("result");
 
 
@@ -64,15 +53,11 @@
 
             const data = {
                 name: $("#input_name").val(),
-                surname: $("#input_surname").val(),
-                country: $("#input_country").val() != "" ? $("#input_country").val() : null,
-                date_of_birth: $("#input_date_of_birth").val()
+                description: $("#input_description").val() != "" ? $("#input_description").val() : null
             }
 
-            console.log(data.date_of_birth);
-
-            if (data.name == '' || data.surname == '' || data.date_of_birth == '') {
-                result.innerHTML = 'Enter name, surname and date_of_birth! Bitch!';
+            if (data.name == '') {
+                result.innerHTML = 'Enter name! Bitch!';
                 return;
             }
 
@@ -80,27 +65,26 @@
                 method: 'POST',
                 body: JSON.stringify(data),
                 headers: { 'content-type': 'application/json' }
-            }).then(res => {
-                if (res.redirected) {
-                    window.location.href = res.url;
-                }
-            });
+            })
+                .then(response => response.json())
+                .then(dto => {
+                    if (dto.name) {
+                        window.location.href = `${baseUrl}/${dto.id}`;
+                    } else {
+                        result.innerHTML = dto.message;
+                    }
+                });
         });
 
 
 
         $("#put").click(function put() {
-            console.log('put')
 
             const data = {
                 id: $("#input_id").val(),
                 name: $("#input_name").val() != "" ? $("#input_name").val() : undefined,
-                surname: $("#input_surname").val() != "" ? $("#input_surname").val() : undefined,
-                country: $("#input_country").val() != "" ? $("#input_country").val() : undefined,
-                date_of_birth: $("#input_date_of_birth").val() != "" ? $("#input_date_of_birth").val() : undefined
+                description: $("#input_description").val() != "" ? $("#input_description").val() : undefined,
             }
-
-            console.log({ data, });
 
             if (data.id == '') {
                 result.innerHTML = 'Enter ID! Bitch!';
@@ -114,10 +98,8 @@
             })
                 .then(response => response.json())
                 .then(dto => {
-                    console.log({ dto });
                     if (dto.name) {
-                        console.log('name');
-                        result.innerHTML = JSON.stringify(dto, null, 4);
+                        window.location.href = `${baseUrl}/${dto.id}`;
                     } else {
                         result.innerHTML = dto.message;
                     }
@@ -140,9 +122,7 @@
             })
                 .then(response => response.json())
                 .then(dto => {
-                    console.log({ dto });
                     if (dto.name) {
-                        console.log('name');
                         result.innerHTML = JSON.stringify(dto, null, 4);
                     } else {
                         result.innerHTML = dto.message;

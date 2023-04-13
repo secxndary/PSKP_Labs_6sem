@@ -127,9 +127,7 @@
             })
                 .then(response => response.json())
                 .then(dto => {
-                    console.log({ dto });
                     if (dto.title) {
-                        console.log('name');
                         result.innerHTML = JSON.stringify(dto, null, 4);
                     } else {
                         result.innerHTML = dto.message;

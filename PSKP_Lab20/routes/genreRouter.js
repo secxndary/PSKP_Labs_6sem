@@ -1,16 +1,16 @@
 const express = require('express');
-const AuthorController = require('../controllers/authorController.js');
+const GenreController = require('../controllers/genreController.js');
 
 
 module.exports = () => {
-    const controller = new AuthorController();
+    const controller = new GenreController();
     const router = express.Router();
 
-    router.get('/', (req, res) => controller.getAuthors(req, res));
-    router.get('/:id', (req, res) => controller.getAuthor(res, req.params['id']));
-    router.post('/', (req, res) => controller.createAuthor(res, req.body));
-    router.put('/', (req, res) => controller.updateAuthor(res, req.body));
-    router.delete('/:id', (req, res) => controller.deleteAuthor(res, req.params['id']));
+    router.get('/', (req, res) => controller.getGenres(req, res));
+    router.get('/:id', (req, res) => controller.getGenre(res, req.params['id']));
+    router.post('/', (req, res) => controller.createGenre(res, req.body));
+    router.put('/', (req, res) => controller.updateGenre(res, req.body));
+    router.delete('/:id', (req, res) => controller.deleteGenre(res, req.params['id']));
 
     return router;
 }

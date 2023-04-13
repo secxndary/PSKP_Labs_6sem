@@ -5,61 +5,57 @@ const uuidv4 = require('uuid').v4;
 const error = new ErrorController();
 
 
-module.exports = class AuthorController {
+module.exports = class GenreController {
 
-    getAuthors = async (req, res) => {
-        const authors = await prisma.author.findMany();
-        res.render('author.hbs', { layout: false, data: JSON.stringify(authors, null, 4) });
+    getGenres = async (req, res) => {
+        const genres = await prisma.genre.findMany();
+        res.render('genre.hbs', { layout: false, data: JSON.stringify(genres, null, 4) });
     }
 
 
-    getAuthor = async (res, id) => {
-        const author = await prisma.author.findUnique({ where: { id } });
-        res.render('author.hbs', { layout: false, data: JSON.stringify(author, null, 4) });
+    getGenre = async (res, id) => {
+        const genre = await prisma.genre.findUnique({ where: { id } });
+        res.render('genre.hbs', { layout: false, data: JSON.stringify(genre, null, 4) });
     }
 
 
 
-    createAuthor = async (res, dto) => {
-        const { name, surname, country, date_of_birth } = dto;
+    createGenre = async (res, dto) => {
+        const { name, description } = dto;
 
         try {
-            const author = await prisma.author.create({
+            const genre = await prisma.genre.create({
                 data: {
                     id: uuidv4(),
                     name,
-                    surname,
-                    country,
-                    date_of_birth: new Date(date_of_birth)
+                    description
                 }
             });
-            res.redirect(`/author/${author.id}`);
+            res.send(genre);
         }
         catch (err) { error.sendError(res, err); }
     }
 
 
 
-    updateAuthor = async (res, dto) => {
-        const { id, name, surname, country, date_of_birth } = dto;
-        const author = await prisma.author.findUnique({ where: { id } });
+    updateGenre = async (res, dto) => {
+        const { id, name, description } = dto;
+        const genre = await prisma.genre.findUnique({ where: { id } });
 
-        if (!author) {
-            error.sendCustomError(res, 404, `Cannot find author with ID = ${id}`);
+        if (!genre) {
+            error.sendCustomError(res, 404, `Cannot find genre with ID = ${id}`);
             return;
         }
 
         try {
-            await prisma.author.update({
+            await prisma.genre.update({
                 where: { id },
                 data: {
                     name,
-                    surname,
-                    country,
-                    date_of_birth: date_of_birth ? new Date(date_of_birth) : undefined
+                    description,
                 }
             }).then(async () => {
-                res.send(await prisma.author.findUnique({ where: { id } }));
+                res.send(await prisma.genre.findUnique({ where: { id } }));
             });
         }
         catch (err) { error.sendError(res, err); }
@@ -67,15 +63,15 @@ module.exports = class AuthorController {
 
 
 
-    deleteAuthor = async (res, id) => {
+    deleteGenre = async (res, id) => {
         try {
-            const author = await prisma.author.findUnique({ where: { id } });
-            if (!author) {
-                error.sendCustomError(res, 404, `Cannot find author with ID = ${id}`);
+            const genre = await prisma.genre.findUnique({ where: { id } });
+            if (!genre) {
+                error.sendCustomError(res, 404, `Cannot find genre with ID = ${id}`);
                 return;
             }
-            await prisma.author.delete({ where: { id } });
-            res.send(author);
+            await prisma.genre.delete({ where: { id } });
+            res.send(genre);
         }
         catch (err) { error.sendError(res, err); }
     }

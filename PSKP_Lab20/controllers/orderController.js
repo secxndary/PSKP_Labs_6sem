@@ -5,61 +5,63 @@ const uuidv4 = require('uuid').v4;
 const error = new ErrorController();
 
 
-module.exports = class AuthorController {
+module.exports = class BookController {
 
-    getAuthors = async (req, res) => {
-        const authors = await prisma.author.findMany();
-        res.render('author.hbs', { layout: false, data: JSON.stringify(authors, null, 4) });
+    getBooks = async (req, res) => {
+        const books = await prisma.book.findMany();
+        res.render('book.hbs', { layout: false, data: JSON.stringify(books, null, 4) });
     }
 
 
-    getAuthor = async (res, id) => {
-        const author = await prisma.author.findUnique({ where: { id } });
-        res.render('author.hbs', { layout: false, data: JSON.stringify(author, null, 4) });
+    getBook = async (res, id) => {
+        const book = await prisma.book.findUnique({ where: { id } });
+        res.render('book.hbs', { layout: false, data: JSON.stringify(book, null, 4) });
     }
 
 
 
-    createAuthor = async (res, dto) => {
-        const { name, surname, country, date_of_birth } = dto;
+    createBook = async (res, dto) => {
+        const { author_id, title, pages } = dto;
+        const author = await prisma.author.findUnique({ where: { id: author_id } });
+
+        if (!author) { error.sendCustomError(res, 404, `Cannot find author with ID = ${author_id}`); return; }
 
         try {
-            const author = await prisma.author.create({
+            const book = await prisma.book.create({
                 data: {
                     id: uuidv4(),
-                    name,
-                    surname,
-                    country,
-                    date_of_birth: new Date(date_of_birth)
+                    author_id,
+                    title,
+                    pages
                 }
             });
-            res.redirect(`/author/${author.id}`);
+            res.send(book);
         }
-        catch (err) { error.sendError(res, err); }
+        catch (err) { console.log(err); error.sendError(res, err); }
     }
 
 
 
-    updateAuthor = async (res, dto) => {
-        const { id, name, surname, country, date_of_birth } = dto;
-        const author = await prisma.author.findUnique({ where: { id } });
+    updateBook = async (res, dto) => {
+        const { id, author_id, title, pages } = dto;
+        const book = await prisma.book.findUnique({ where: { id } });
+        if (!book) { error.sendCustomError(res, 404, `Cannot find book with ID = ${id}`); return; }
 
-        if (!author) {
-            error.sendCustomError(res, 404, `Cannot find author with ID = ${id}`);
-            return;
+        if (author_id) {
+            const author = await prisma.author.findUnique({ where: { id: author_id } });
+            if (!author) { error.sendCustomError(res, 404, `Cannot find author with ID = ${author_id}`); return; }
         }
 
         try {
-            await prisma.author.update({
+            await prisma.book.update({
                 where: { id },
                 data: {
-                    name,
-                    surname,
-                    country,
-                    date_of_birth: date_of_birth ? new Date(date_of_birth) : undefined
+                    author_id,
+                    title,
+                    pages: Number(pages)
                 }
             }).then(async () => {
-                res.send(await prisma.author.findUnique({ where: { id } }));
+                res.send(await prisma.book.findUnique({ where: { id } }));
             });
         }
         catch (err) { error.sendError(res, err); }
@@ -67,15 +69,15 @@ module.exports = class AuthorController {
 
 
 
-    deleteAuthor = async (res, id) => {
+    deleteBook = async (res, id) => {
+        const book = await prisma.book.findUnique({ where: { id } });
         try {
-            const author = await prisma.author.findUnique({ where: { id } });
-            if (!author) {
-                error.sendCustomError(res, 404, `Cannot find author with ID = ${id}`);
+            if (!book) {
+                error.sendCustomError(res, 404, `Cannot find book with ID = ${id}`);
                 return;
             }
-            await prisma.author.delete({ where: { id } });
-            res.send(author);
+            await prisma.book.delete({ where: { id } });
+            res.send(book);
         }
         catch (err) { error.sendError(res, err); }
     }

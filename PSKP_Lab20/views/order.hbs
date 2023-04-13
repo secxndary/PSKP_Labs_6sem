@@ -23,23 +23,18 @@
             </div>
 
             <div class="form-group mt-2">
-                <label for="name">Name</label>
-                <input class="form-control" type="text" name="name" id="input_name" required>
+                <label for="author_id">Author Id</label>
+                <input class="form-control" type="text" name="author_id" id="input_author_id" required>
             </div>
 
             <div class="form-group mt-2">
-                <label for="surname">Surname</label>
-                <input class="form-control" type="text" name="surname" id="input_surname" required>
+                <label for="title">Title</label>
+                <input class="form-control" type="text" name="title" id="input_title" required>
             </div>
 
             <div class="form-group mt-2">
-                <label for="country">Country</label>
-                <input class="form-control" type="text" name="country" id="input_country">
-            </div>
-
-            <div class="form-group mt-2">
-                <label for="date_of_birth">Date of Birth</label>
-                <input class="form-control" type="date" name="date_of_birth" id="input_date_of_birth">
+                <label for="pages">Pages</label>
+                <input class="form-control" type="number" name="pages" id="input_pages">
             </div>
         </div>
 
@@ -49,9 +44,8 @@
 
 
     <script>
-        const baseUrl = '/author';
+        const baseUrl = '/book';
         const result = document.getElementById("result");
-
 
 
         $("#get").click(function get() {
@@ -61,18 +55,14 @@
 
 
         $("#post").click(function create() {
-
             const data = {
-                name: $("#input_name").val(),
-                surname: $("#input_surname").val(),
-                country: $("#input_country").val() != "" ? $("#input_country").val() : null,
-                date_of_birth: $("#input_date_of_birth").val()
+                author_id: $("#input_author_id").val(),
+                title: $("#input_title").val(),
+                pages: Number($("#input_pages").val())
             }
 
-            console.log(data.date_of_birth);
-
-            if (data.name == '' || data.surname == '' || data.date_of_birth == '') {
-                result.innerHTML = 'Enter name, surname and date_of_birth! Bitch!';
+            if (data.title == '' || data.author_id == '' || data.pages == '') {
+                result.innerHTML = 'Enter title, author_id and pages! Bitch!';
                 return;
             }
 
@@ -80,27 +70,26 @@
                 method: 'POST',
                 body: JSON.stringify(data),
                 headers: { 'content-type': 'application/json' }
-            }).then(res => {
-                if (res.redirected) {
-                    window.location.href = res.url;
-                }
-            });
+            })
+                .then(response => response.json())
+                .then(dto => {
+                    if (dto.title) {
+                        window.location.href = `${baseUrl}/${dto.id}`;
+                    } else {
+                        result.innerHTML = dto.message;
+                    }
+                });
         });
 
 
 
         $("#put").click(function put() {
-            console.log('put')
-
             const data = {
                 id: $("#input_id").val(),
-                name: $("#input_name").val() != "" ? $("#input_name").val() : undefined,
-                surname: $("#input_surname").val() != "" ? $("#input_surname").val() : undefined,
-                country: $("#input_country").val() != "" ? $("#input_country").val() : undefined,
-                date_of_birth: $("#input_date_of_birth").val() != "" ? $("#input_date_of_birth").val() : undefined
+                author_id: $("#input_author_id").val() != "" ? $("#input_author_id").val() : undefined,
+                title: $("#input_title").val() != "" ? $("#input_title").val() : undefined,
+                pages: $("#input_pages").val() != "" ? $("#input_pages").val() : undefined
             }
-
-            console.log({ data, });
 
             if (data.id == '') {
                 result.innerHTML = 'Enter ID! Bitch!';
@@ -114,10 +103,8 @@
             })
                 .then(response => response.json())
                 .then(dto => {
-                    console.log({ dto });
-                    if (dto.name) {
-                        console.log('name');
-                        result.innerHTML = JSON.stringify(dto, null, 4);
+                    if (dto.title) {
+                        window.location.href = `${baseUrl}/${dto.id}`;
                     } else {
                         result.innerHTML = dto.message;
                     }
@@ -140,9 +127,7 @@
             })
                 .then(response => response.json())
                 .then(dto => {
-                    console.log({ dto });
-                    if (dto.name) {
-                        console.log('name');
+                    if (dto.title) {
                         result.innerHTML = JSON.stringify(dto, null, 4);
                     } else {
                         result.innerHTML = dto.message;
