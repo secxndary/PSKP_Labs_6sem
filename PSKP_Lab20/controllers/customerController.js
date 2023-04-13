@@ -21,18 +21,15 @@ module.exports = class CustomerController {
 
 
     createCustomer = async (res, dto) => {
-        const { author_id, title, pages } = dto;
-        const author = await prisma.author.findUnique({ where: { id: author_id } });
-
-        if (!author) { error.sendCustomError(res, 404, `Cannot find author with ID = ${author_id}`); return; }
+        const { company_name, address, phone } = dto;
 
         try {
             const customer = await prisma.customer.create({
                 data: {
                     id: uuidv4(),
-                    author_id,
-                    title,
-                    pages
+                    company_name,
+                    address,
+                    phone
                 }
             });
             res.send(customer);
@@ -43,22 +40,17 @@ module.exports = class CustomerController {
 
 
     updateCustomer = async (res, dto) => {
-        const { id, author_id, title, pages } = dto;
+        const { id, company_name, address, phone } = dto;
         const customer = await prisma.customer.findUnique({ where: { id } });
         if (!customer) { error.sendCustomError(res, 404, `Cannot find customer with ID = ${id}`); return; }
-
-        if (author_id) {
-            const author = await prisma.author.findUnique({ where: { id: author_id } });
-            if (!author) { error.sendCustomError(res, 404, `Cannot find author with ID = ${author_id}`); return; }
-        }
 
         try {
             await prisma.customer.update({
                 where: { id },
                 data: {
-                    author_id,
-                    title,
-                    pages: Number(pages)
+                    company_name,
+                    address,
+                    phone
                 }
             }).then(async () => {
                 res.send(await prisma.customer.findUnique({ where: { id } }));

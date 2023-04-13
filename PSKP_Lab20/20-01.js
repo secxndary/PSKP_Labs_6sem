@@ -1,7 +1,7 @@
 const path = require('path');
 const express = require('express');
+const prikoldes = require('hbs');
 const handlebar = require('express-handlebars');
-const bodyParser = require('body-parser');
 const authorRouter = require('./routes/authorRouter')();
 const bookRouter = require('./routes/bookRouter')();
 const genreRouter = require('./routes/genreRouter')();
@@ -12,9 +12,9 @@ const hbs = handlebar.create({ extname: '.hbs' });
 const app = express();
 
 
+prikoldes.registerPartials(__dirname + 'views/partials');
 app.listen(PORT, () => console.log(`[OK] Server running at localhost:${PORT}/\n`));
 app.use(express.urlencoded({ extended: true }));
-// app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'static')));
 app.use(express.json());
 app.set('views', path.join(__dirname, 'views'));
