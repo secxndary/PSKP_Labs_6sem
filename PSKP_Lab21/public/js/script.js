@@ -52,6 +52,7 @@ async function deleteContact() {
 
 function blockButton(name, phone) {
     const button = document.getElementById('delete-button');
+
     if (document.getElementsByName('name').value !== name ||
         document.getElementsByName('phone').value !== phone) {
         button.setAttribute('disabled', 'true');
