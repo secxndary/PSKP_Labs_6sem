@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    
+
     {{>header}}
 
     <div class="container d-flex align-items-start justify-content-between mt-4">
@@ -25,18 +25,28 @@
             </div>
 
             <div class="form-group mt-2">
-                <label for="author_id">Author Id</label>
-                <input class="form-control" type="text" name="author_id" id="input_author_id" required>
+                <label for="book_id">Book Id</label>
+                <input class="form-control" type="text" name="book_id" id="input_book_id">
             </div>
 
             <div class="form-group mt-2">
-                <label for="title">Title</label>
-                <input class="form-control" type="text" name="title" id="input_title" required>
+                <label for="customer_id">Customer Id</label>
+                <input class="form-control" type="text" name="customer_id" id="input_customer_id">
             </div>
 
             <div class="form-group mt-2">
-                <label for="pages">Pages</label>
-                <input class="form-control" type="number" name="pages" id="input_pages">
+                <label for="order_date">Order Date</label>
+                <input class="form-control" type="date" name="order_date" id="input_order_date">
+            </div>
+
+            <div class="form-group mt-2">
+                <label for="qty">Quantity</label>
+                <input class="form-control" type="number" name="qty" id="input_qty">
+            </div>
+
+            <div class="form-group mt-2">
+                <label for="amount">Amount</label>
+                <input class="form-control" type="number" step="0.01" name="amount" id="input_amount">
             </div>
         </div>
 
@@ -46,7 +56,7 @@
 
 
     <script>
-        const baseUrl = '/book';
+        const baseUrl = '/order';
         const result = document.getElementById("result");
 
 
@@ -58,13 +68,15 @@
 
         $("#post").click(function create() {
             const data = {
-                author_id: $("#input_author_id").val(),
-                title: $("#input_title").val(),
-                pages: Number($("#input_pages").val())
+                book_id: $("#input_book_id").val(),
+                customer_id: $("#input_customer_id").val(),
+                order_date: $("#input_order_date").val(),
+                qty: $("#input_qty").val(),
+                amount: $("#input_amount").val(),
             }
 
-            if (data.title == '' || data.author_id == '' || data.pages == '') {
-                result.innerHTML = 'Enter title, author_id and pages! Bitch!';
+            if (data.customer_id == '' || data.book_id == '' || data.order_date == '' || data.qty == '' || data.amount == '') {
+                result.innerHTML = 'Fill all inputs! Bitch!';
                 return;
             }
 
@@ -75,7 +87,7 @@
             })
                 .then(response => response.json())
                 .then(dto => {
-                    if (dto.title) {
+                    if (dto.qty) {
                         window.location.href = `${baseUrl}/${dto.id}`;
                     } else {
                         result.innerHTML = dto.message;
@@ -88,9 +100,11 @@
         $("#put").click(function put() {
             const data = {
                 id: $("#input_id").val(),
-                author_id: $("#input_author_id").val() != "" ? $("#input_author_id").val() : undefined,
-                title: $("#input_title").val() != "" ? $("#input_title").val() : undefined,
-                pages: $("#input_pages").val() != "" ? $("#input_pages").val() : undefined
+                book_id: $("#input_book_id").val() != "" ? $("#input_book_id").val() : undefined,
+                customer_id: $("#input_customer_id").val() != "" ? $("#input_customer_id").val() : undefined,
+                order_date: $("#input_order_date").val() != "" ? $("#input_order_date").val() : undefined,
+                qty: $("#input_qty").val() != "" ? $("#input_qty").val() : undefined,
+                amount: $("#input_amount").val() != "" ? $("#input_amount").val() : undefined
             }
 
             if (data.id == '') {
@@ -105,7 +119,7 @@
             })
                 .then(response => response.json())
                 .then(dto => {
-                    if (dto.title) {
+                    if (dto.qty) {
                         window.location.href = `${baseUrl}/${dto.id}`;
                     } else {
                         result.innerHTML = dto.message;
@@ -129,7 +143,7 @@
             })
                 .then(response => response.json())
                 .then(dto => {
-                    if (dto.title) {
+                    if (dto.qty) {
                         result.innerHTML = JSON.stringify(dto, null, 4);
                     } else {
                         result.innerHTML = dto.message;

@@ -58,7 +58,7 @@ module.exports = class BookController {
                 data: {
                     author_id,
                     title,
-                    pages: Number(pages)
+                    pages: pages ? Number(pages) : undefined
                 }
             }).then(async () => {
                 res.send(await prisma.book.findUnique({ where: { id } }));

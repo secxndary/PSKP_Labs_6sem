@@ -5,79 +5,88 @@ const uuidv4 = require('uuid').v4;
 const error = new ErrorController();
 
 
-module.exports = class BookController {
+module.exports = class OrderController {
 
-    getBooks = async (req, res) => {
-        const books = await prisma.book.findMany();
-        res.render('book.hbs', { layout: false, data: JSON.stringify(books, null, 4) });
+    getOrders = async (req, res) => {
+        const orders = await prisma.order.findMany();
+        res.render('order.hbs', { layout: false, data: JSON.stringify(orders, null, 4) });
     }
 
 
-    getBook = async (res, id) => {
-        const book = await prisma.book.findUnique({ where: { id } });
-        res.render('book.hbs', { layout: false, data: JSON.stringify(book, null, 4) });
+    getOrder = async (res, id) => {
+        const order = await prisma.order.findUnique({ where: { id } });
+        res.render('order.hbs', { layout: false, data: JSON.stringify(order, null, 4) });
     }
 
 
 
-    createBook = async (res, dto) => {
-        const { author_id, title, pages } = dto;
-        const author = await prisma.author.findUnique({ where: { id: author_id } });
+    createOrder = async (res, dto) => {
+        const { book_id, customer_id, order_date, qty, amount } = dto;
+        const book = await prisma.book.findUnique({ where: { id: book_id } });
+        const customer = await prisma.customer.findUnique({ where: { id: customer_id } });
 
-        if (!author) { error.sendCustomError(res, 404, `Cannot find author with ID = ${author_id}`); return; }
+        if (!book) { error.sendCustomError(res, 404, `Cannot find book with ID = ${book_id}`); return; }
+        if (!customer) { error.sendCustomError(res, 404, `Cannot find customer with ID = ${customer_id}`); return; }
 
         try {
-            const book = await prisma.book.create({
+            const order = await prisma.order.create({
                 data: {
                     id: uuidv4(),
-                    author_id,
-                    title,
-                    pages
+                    book_id,
+                    customer_id,
+                    order_date: new Date(order_date),
+                    qty: Number(qty),
+                    amount: Number(amount)
                 }
             });
-            res.send(book);
+            res.send(order);
         }
         catch (err) { console.log(err); error.sendError(res, err); }
     }
 
 
 
-    updateBook = async (res, dto) => {
-        const { id, author_id, title, pages } = dto;
-        const book = await prisma.book.findUnique({ where: { id } });
-        if (!book) { error.sendCustomError(res, 404, `Cannot find book with ID = ${id}`); return; }
-
-        if (author_id) {
-            const author = await prisma.author.findUnique({ where: { id: author_id } });
-            if (!author) { error.sendCustomError(res, 404, `Cannot find author with ID = ${author_id}`); return; }
+    updateOrder = async (res, dto) => {
+        const { id, book_id, customer_id, order_date, qty, amount } = dto;
+        if (book_id) {
+            const book = await prisma.book.findUnique({ where: { id: book_id } });
+            if (!book) { error.sendCustomError(res, 404, `Cannot find book with ID = ${book_id}`); return; }
+        }
+        if (customer_id) {
+            const customer = await prisma.customer.findUnique({ where: { id: customer_id } });
+            if (!customer) { error.sendCustomError(res, 404, `Cannot find customer with ID = ${customer_id}`); return; }
         }
 
+        console.log({ dto });
+        console.log(Number(undefined));
         try {
-            await prisma.book.update({
+            await prisma.order.update({
                 where: { id },
                 data: {
-                    author_id,
-                    title,
-                    pages: Number(pages)
+                    book_id,
+                    customer_id,
+                    order_date: order_date ? new Date(order_date) : undefined,
+                    qty: qty ? Number(qty) : undefined,
+                    amount: amount ? Number(amount) : undefined
                 }
             }).then(async () => {
-                res.send(await prisma.book.findUnique({ where: { id } }));
+                res.send(await prisma.order.findUnique({ where: { id } }));
             });
         }
-        catch (err) { error.sendError(res, err); }
+        catch (err) { console.log(err); error.sendError(res, err); }
     }
 
 
 
-    deleteBook = async (res, id) => {
-        const book = await prisma.book.findUnique({ where: { id } });
+    deleteOrder = async (res, id) => {
+        const order = await prisma.order.findUnique({ where: { id } });
         try {
-            if (!book) {
-                error.sendCustomError(res, 404, `Cannot find book with ID = ${id}`);
+            if (!order) {
+                error.sendCustomError(res, 404, `Cannot find order with ID = ${id}`);
                 return;
             }
-            await prisma.book.delete({ where: { id } });
-            res.send(book);
+            await prisma.order.delete({ where: { id } });
+            res.send(order);
         }
         catch (err) { error.sendError(res, err); }
     }
