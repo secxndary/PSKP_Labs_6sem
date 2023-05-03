@@ -3,7 +3,7 @@ const fs = require('fs');
 const app = express();
 
 const passport = require('passport');
-const BasicStrategy = require('passport-http').BasicStrategy;
+const DigestStrategy = require('passport-http').DigestStrategy;
 const session = require('express-session')({
     resave: false,
     saveUninitialized: false,
@@ -15,21 +15,20 @@ const users = JSON.parse(fs.readFileSync('users.json'));
 
 app.use(session);
 app.use(passport.initialize());
-passport.use(new BasicStrategy((login, password, done) => {
-    console.log(`\npassport.use: login = ${login}, password = ${password}`);
+passport.use(new DigestStrategy({ qop: 'auth' }, (login, done) => {
+    console.log(`\npassport.use: login = ${login}`);
     let rc = null;
     let credentials = getCredentials(login);
     if (!credentials) {
-        rc = done(null, false, { message: 'Incorrect login' });
-        console.log(`denied: login = ${login}, password = ${password}`);
-    }
-    else if (!verifyPassword(credentials.password, password)) {
-        rc = done(null, false, { message: 'Incorrect password' });
-        console.log(`incorrect: login = ${login}, password = ${password}`);
+        rc = done(null, false);
+        console.log(`denied: login = ${login}`);
     }
     else
-        rc = done(null, login);
+        rc = done(null, credentials.login, credentials.password);
     return rc;
+}, (params, done) => {
+    console.log('params: ', params);
+    done(null, true);
 }));
 
 
@@ -45,10 +44,12 @@ app.get('/login', (req, res, next) => {
         delete req.headers['authorization'];
     }
     next();
-}, passport.authenticate('basic', { session: false }))
-    .get('/login', (req, res) => {
-        res.redirect('/resource');
-    });
+})
+    .get(
+        '/login',
+        passport.authenticate('digest', { session: false }),
+        (req, res) => { res.redirect('/resource'); }
+    );
 
 
 // Отключить аутентифицированный доступ к ресурсу 
