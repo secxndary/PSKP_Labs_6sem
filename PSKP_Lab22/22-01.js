@@ -3,7 +3,6 @@ const fs = require('fs');
 const app = express();
 
 const passport = require('passport');
-const auth = require('basic-auth');
 const BasicStrategy = require('passport-http').BasicStrategy;
 const session = require('express-session')({
     resave: false,
@@ -12,80 +11,77 @@ const session = require('express-session')({
 });
 
 const port = 5000;
-const users = fs.readFileSync('users.json');
+const users = JSON.parse(fs.readFileSync('users.json'));
 
-app.use(express.static(__dirname + '/static'));
-app.use(express.json());
 app.use(session);
-
-
 app.use(passport.initialize());
-passport.use(new BasicStrategy((user, password, done) => {
-    console.log('passport.use ', user, password);
+passport.use(new BasicStrategy((login, password, done) => {
+    console.log(`\npassport.use: login = ${login}, password = ${password}`);
     let rc = null;
-    let credentials = getCredentials(user);
-    if (!credentials)
-        rc = done(null, false, { message: 'incorrect username' });
-    else if (!verifyPassword(credentials.password, password))
-        rc = done(null, false, { message: 'incorrect password' });
+    let credentials = getCredentials(login);
+    if (!credentials) {
+        rc = done(null, false, { message: 'Incorrect username' });
+        console.log(`denied: login = ${login}, password = ${password}`);
+    }
+    else if (!verifyPassword(credentials.password, password)) {
+        rc = done(null, false, { message: 'Incorrect password' });
+        console.log(`incorrect: login = ${login}, password = ${password}`);
+    }
     else
-        rc = done(null, user);
+        rc = done(null, login);
     return rc;
 }));
 
 
 
+// Перенеправление на /login
+app.get('/', (req, res) => res.redirect('/login'));
 
 
-// Ввод имени и пароля для аутентифицированного доступа к ресурсу
-app.get(
-    '/login',
-    passport.authenticate('basic', { session: false }),
-    (req, res, next) => { res.redirect('/resource'); });
+// Ввод логина и пароля в prompt'е для аутентифицированного доступа к ресурсу
+app.get('/login', (req, res, next) => {
+    if (req.session.logout) {
+        console.log('req.session.logout: ', req.session.logout);
+        req.session.logout = false;
+        delete req.headers['authorization'];
+    }
+    next();
+}, passport.authenticate('basic', { session: false }))
+    .get('/login', (req, res, next) => {
+        res.redirect('/resource');
+    });
 
 
-
-
-
-
-app.get('/logout', (req, res, next) => {
-    // Отключить аутентифицированный доступ к ресурсу 
+// Отключить аутентифицированный доступ к ресурсу 
+app.get('/logout', (req, res) => {
     req.session.logout = true;
-    delete req.headers['authorization'];
+    res.redirect('/login');
 });
 
-app.get('/resource', (req, res, next) => {
-    // Ресурс отправляет сообщение RESOURCE
-    res.send('RESOURCE');
-    // При попытке неаутентифицированного доступа выполняет переадресацию на GET /login 
+
+// Ресурс отправляет сообщение RESOURCE
+// При попытке неаутентифицированного доступа выполняет переадресацию на GET /login 
+app.get('/resource', (req, res) => {
+    if (req.headers['authorization'])
+        res.send('SUPER SECRET RESOURCE');
+    else
+        res.redirect('/login');
 });
 
-// other URIs => 404 error
+
+// Остальные URI => Сообщение со статусом 404 
+app.get('*', (req, res) => {
+    res.status(404).send('[ERROR] 404: Not Found');
+});
 
 
 
-const check = (creds1, creds2) => creds1.name.toUpperCase() == creds2.name.toUpperCase() && creds1.pass == creds2.pass;
-// const getCredentials = name => users.find(u => u.name.toUpperCase() == name.toUpperCase());
+const getCredentials = login => {
+    console.log('login', login)
+    console.log('found', users.find(u => u.login.toUpperCase() == login.toUpperCase()))
+    return users.find(u => u.login.toUpperCase() == login.toUpperCase());
+}
 const verifyPassword = (firstPassword, secondPassword) => firstPassword == secondPassword;
 
+
 app.listen(process.env.PORT || port, () => console.log(`[OK] Server running at localhost:${port}/\n`));
-
-
-
-
-
-
-    // const mycred = { name: "secxndary", pass: "qwe" };
-    // const credentials = auth(req);
-    // if (!credentials) {
-    //     res.status(401).append('WWW-Authenticate', 'Basic realm="Resurse-realm"').send('Access denied');
-    //     console.log('denied: ', credentials);
-    // }
-    // else if (!check(credentials, mycred)) {
-    //     res.status(401).append('WWW-Authenticate', 'Basic realm="Resurse-realm"').send('Incorrect name or pass');
-    //     console.log('incorrect: ', credentials);
-    // }
-    // else {
-    //     res.redirect('/resource');
-    //     console.log('redirect resource: ', credentials);
-    // }
