@@ -8,5 +8,10 @@
         "id": 2,
         "login": "user",
         "password": "qwe"
+    },
+    {
+        "id": 3,
+        "login": "q",
+        "password": "q"
     }
 ]
