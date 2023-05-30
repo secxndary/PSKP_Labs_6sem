@@ -5,11 +5,12 @@ import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 
 
+const atSecret = 'my_secret_access_token'
+const rtSecret = 'my_secret_refresh_token'
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 const prisma = new PrismaClient()
-const atSecret = 'my_secret_access_token'
-const rtSecret = 'my_secret_refresh_token'
 const app = express()
 const PORT = 5000;
 
@@ -20,8 +21,8 @@ app.use(express.urlencoded({ extended: true }))
 
 async function getTokens(payload) {
     const tokens = {
-        accessToken: jwt.sign(payload, atSecret, { expiresIn: '30s' }),
-        refreshToken: jwt.sign(payload, rtSecret, { expiresIn: '10d' }),
+        accessToken: jwt.sign(payload, atSecret, { expiresIn: '10m' }),
+        refreshToken: jwt.sign(payload, rtSecret, { expiresIn: '24h' }),
     }
 
     await prisma.user.update({
@@ -33,29 +34,26 @@ async function getTokens(payload) {
         },
     })
 
-    return tokens
+    return tokens;
 }
 
 
 
 function jwtRefreshStrategy(req, res, next) {
     try {
-        const token = req.headers['authorization'].split(' ')?.[1]
+        const token = req.headers['authorization'].split(' ')?.[1];
 
-        if (!token) {
-            return res.writeHead(401, 'unauthorized').end('unauthorized')
-        }
+        if (!token)
+            return res.status(401).send('<h2>[ERROR] 401: Unauthorized</h2>');
 
-        const user = jwt.verify(token, rtSecret)
-        req.user = { ...user, token }
-
-        next()
+        const user = jwt.verify(token, rtSecret);
+        req.user = { ...user, token };
+        next();
     } catch (e) {
-        if (e instanceof jwt.TokenExpiredError) {
-            return res.writeHead(401, 'invalid_token').end('invalid token')
-        }
+        if (e instanceof jwt.TokenExpiredError)
+            return res.status(401).send('<h2>[ERROR] 401: Invalid token</h2>');
 
-        return res.writeHead(401).end('unauthorized')
+        return res.status(401).send('<h2>[ERROR] 401: Unauthorized</h2>');
     }
 }
 
@@ -63,24 +61,22 @@ function jwtRefreshStrategy(req, res, next) {
 
 function jwtStrategy(req, res, next) {
     try {
-        const token = req.headers['authorization'].split(' ')?.[1]
+        const token = req.headers['authorization'].split(' ')?.[1];
 
-        if (!token) {
-            return res.writeHead(401, 'unauthorized').end('unauthorized')
-        }
+        if (!token)
+            return res.status(401).send('<h2>[ERROR] 401: Unauthorized</h2>');
 
-        const user = jwt.verify(token, atSecret)
-        req.user = user
-
-        next()
+        const user = jwt.verify(token, atSecret);
+        req.user = user;
+        next();
     } catch (e) {
-        if (e instanceof jwt.TokenExpiredError) {
-            return res.writeHead(401, 'invalid_token').end('invalid token')
-        }
+        if (e instanceof jwt.TokenExpiredError)
+            return res.status(401).send('<h2>[ERROR] 401: Invalid token</h2>');
 
-        res.writeHead(401).end('unauthorized')
+        return res.status(401).send('<h2>[ERROR] 401: Unauthorized</h2>');
     }
 }
+
 
 
 
@@ -96,32 +92,29 @@ app.post('/login', async (req, res) => {
         },
         select: {
             username: true,
-        },
-    })
+        }
+    });
 
     if (!user) {
-        return res.writeHead(401, 'bad_credentials').end('bad credentials')
+        return res.status(401).send('<h2>[ERROR] 401: Invalid credentials</h2>');
     }
 
-    const tokens = await getTokens(user)
-    res.json(tokens)
+    const tokens = await getTokens(user);
+    res.status(200).end(JSON.stringify(tokens, null, 4));
 })
 
 
-app.get('/reg', (req, res) => {
-    res.sendFile(join(__dirname, './static/registration.html'))
-})
-
+app.get('/reg', (req, res) => { res.sendFile(join(__dirname, './static/register.html')); })
 
 app.post('/reg', async (req, res) => {
     let user = await prisma.user.findFirst({
         where: {
             username: req.body.username,
         },
-    })
+    });
 
     if (user) {
-        return res.writeHead(409).end('conflict')
+        return res.status(409).send('<h2>[ERROR] 401: Conflict</h2>');
     }
 
     user = await prisma.user.create({
@@ -132,10 +125,10 @@ app.post('/reg', async (req, res) => {
         select: {
             username: true,
         },
-    })
+    });
 
-    const tokens = await getTokens(user)
-    res.status(201).json(tokens)
+    const tokens = await getTokens(user);
+    res.status(201).end(JSON.stringify(tokens, null, 4));
 })
 
 
@@ -148,14 +141,14 @@ app.post('/refresh', jwtRefreshStrategy, async (req, res) => {
         select: {
             username: true,
         },
-    })
+    });
 
     if (!user) {
-        return res.writeHead(401, 'invalid_token').end('invalid token')
+        return res.status(401).send('<h2>[ERROR] 401: Invalid token</h2>');
     }
 
-    const tokens = await getTokens(user)
-    res.json(tokens)
+    const tokens = await getTokens(user);
+    res.status(200).end(JSON.stringify(tokens, null, 4));
 })
 
 
@@ -172,16 +165,13 @@ app.post('/logout', jwtStrategy, async (req, res) => {
         },
     })
 
-    res.end('logout')
+    res.send('<h2>Logout</h2>');
 })
 
 
-app.get(
-    '/resource',
-    jwtStrategy,
-    (req, res) => {
-        res.end(`resource owned by ${req.user.username}`)
-    })
+app.get('/resource', jwtStrategy, (req, res) => {
+    return res.send(`<h2>Welcome to the resource, ${req.user.username}!</h2>`);
+})
 
 
 app.listen(process.env.PORT || PORT, () => console.log(`[OK] Server running at localhost:${PORT}/\n`));

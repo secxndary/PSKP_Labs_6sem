@@ -37,7 +37,7 @@ passport.use(new Strategy((username, password, done) => {
     const user = users[index];
 
     if (index === -1)
-        return done(null, false, { 'Error': 'incorrect credentials' });
+        return done(null, false, { 'Error': 'Incorrect credentials' });
 
     if (user.password !== password)
         return done(null, false, { 'Error': `Passwords doesn't match` });
