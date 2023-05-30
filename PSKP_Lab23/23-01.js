@@ -1,6 +1,7 @@
 import express from 'express'
 import session from 'express-session'
 import passport from 'passport'
+import { v4 as uuidv4 } from 'uuid';
 import { Strategy } from 'passport-local'
 import { readFileSync } from 'fs'
 import { dirname, join } from 'path'
@@ -15,41 +16,41 @@ const PORT = 5000;
 app.use(express.static(__dirname + '/static'));
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
-    secret: 'secret',
+    genid: req => {
+        console.log('\x1b[33m%s\x1b[0m', `[GENERATE] Session ID: ${req.sessionID}`);
+        return uuidv4();
+    },
+    secret: 'my_secret_session',
     resave: false,
     saveUninitialized: false
-}))
+}));
 app.use(passport.initialize());
 app.use(passport.session());
 
-passport.serializeUser((user, done) => {
-    done(null, user);
-});
 
-passport.deserializeUser((user, done) => {
-    done(null, user);
-});
+passport.serializeUser((user, done) => { done(null, user); });
+passport.deserializeUser((user, done) => { done(null, user); });
 
 passport.use(new Strategy((username, password, done) => {
     const users = JSON.parse(readFileSync(join(__dirname, './users.json')));
     const index = users.findIndex(e => e.username === username);
-
-    if (index === -1) {
-        return done(null, false, { 'Error': 'incorrect credentials' });
-    }
-
     const user = users[index];
 
-    if (user.password !== password) {
+    if (index === -1)
         return done(null, false, { 'Error': 'incorrect credentials' });
-    }
+
+    if (user.password !== password)
+        return done(null, false, { 'Error': `Passwords doesn't match` });
 
     return done(null, user);
 }));
 
-app.get('/login', (_req, res) => {
-    res.sendFile(join(__dirname, './static/login.html'));
-});
+
+
+
+app.get('/', (req, res) => { res.redirect('/login'); });
+
+app.get('/login', (req, res) => { res.sendFile(join(__dirname, './static/login.html')); });
 
 app.post('/login', passport.authenticate(
     'local',
@@ -59,20 +60,20 @@ app.post('/login', passport.authenticate(
     }
 ));
 
-app.get('/resource', (req, res) => {
-    if (req.user) {
-        return res.end(`resource owned by ${req.user.username}`);
-    }
 
-    res.writeHead(401, 'unauthorized');
-    res.end('unauthorized');
+app.get('/resource', (req, res) => {
+    console.log('\x1b[36m%s\x1b[0m', `[RESOURCE] Session ID: ${req.sessionID}`);
+    if (!req.user)
+        return res.status(401).send('<h2>[ERROR] 401: Unauthorized</h2>');
+    return res.send(`<h2>Welcome to the resource, ${req.user.username}!</h2>`);
+
 });
 
+
 app.get('/logout', (req, res, next) => {
-    req.logout((err) => {
-        if (err) {
-            next(err);
-        }
+    req.logout(err => {
+        if (err)
+            console.log(err);
 
         res.redirect('/login');
     })
