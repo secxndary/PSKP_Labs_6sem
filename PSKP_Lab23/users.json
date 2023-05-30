@@ -1,17 +1,17 @@
 [
     {
         "id": 1,
-        "login": "secxndary",
+        "username": "secxndary",
         "password": "2233"
     },
     {
         "id": 2,
-        "login": "user",
+        "username": "user",
         "password": "qwe"
     },
     {
         "id": 3,
-        "login": "q",
+        "username": "q",
         "password": "q"
     }
 ]
