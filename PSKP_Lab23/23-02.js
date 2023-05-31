@@ -9,6 +9,8 @@ import { fileURLToPath } from 'url'
 
 const atSecret = 'my_secret_access_token'
 const rtSecret = 'my_secret_refresh_token'
+const accessKey = "access_key";
+const refreshKey = "refresh_key";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -91,13 +93,13 @@ function jwtStrategy(req, res, next) {
 
 redisClient.on('error', (err) => { console.log('[ERROR] Redis:', err); });
 
-redisClient.on('connect', () => console.log('[OK] Client connected to Redis.\n'));
+// redisClient.on('connect', () => console.log('[OK] Client connected to Redis.'));
 
 redisClient.on('end', () => console.log('[WARN] Client disconnected.\n'));
 
-// redisClient.connect()
-//     .then(() => { redisClient.quit(); })
-//     .catch(err => console.log(err));
+redisClient.connect()
+    .then(() => { console.log('[OK] Connect Redis.') })
+    .catch(err => console.log(err));
 
 async function addToBlacklist(token) {
     console.log('addToBlacklist')
@@ -208,32 +210,83 @@ app.post('/reg', async (req, res) => {
 
 
 
-app.get('/refresh-token', jwtRefreshStrategy, async (req, res) => {
-    const isRevoked = await isTokenRevoked(req.user.token);
-    if (isRevoked)
-        return res.status(401).send('<h2>[ERROR] 401: Invalid token</h2>');
+// app.get('/refresh-token', jwtRefreshStrategy, async (req, res) => {
+//     const isRevoked = await isTokenRevoked(req.user.token);
+//     if (isRevoked)
+//         return res.status(401).send('<h2>[ERROR] 401: Invalid token</h2>');
 
-    const user = await prisma.user.findFirst({
-        where: {
-            username: req.user.username,
-            rt: req.user.token,
-        },
-        select: {
-            username: true,
-        }
-    });
+//     const user = await prisma.user.findFirst({
+//         where: {
+//             username: req.user.username,
+//             rt: req.user.token,
+//         },
+//         select: {
+//             username: true,
+//         }
+//     });
 
-    if (!user) {
-        return res.status(401).send('<h2>[ERROR] 401: Invalid token</h2>');
-    }
+//     if (!user) {
+//         return res.status(401).send('<h2>[ERROR] 401: Invalid token</h2>');
+//     }
 
-    const tokens = await getTokens(user);
+//     const tokens = await getTokens(user);
 
-    res.cookie('accessToken', tokens.accessToken);
-    res.cookie('refreshToken', tokens.refreshToken);
+//     res.cookie('accessToken', tokens.accessToken);
+//     res.cookie('refreshToken', tokens.refreshToken);
 
-    res.status(200).end(JSON.stringify(tokens, null, 4));
-})
+//     res.status(200).end(JSON.stringify(tokens, null, 4));
+// })
+
+
+
+app.get("/refresh-token", async (req, res) => {
+    if (req.cookies.refreshToken) {
+        let isToken = await redisClient.get(req.cookies.refreshToken);
+        if (isToken === null) {
+            jwt.verify(req.cookies.refreshToken, refreshKey, async (err, payload) => {
+                if (err) res.send(err.message);
+                else if (payload) {
+                    await redisClient.set(req.cookies.refreshToken, "blocked");
+
+                    const candidate = await Users.findOne({ where: { id: payload.id } });
+                    const newAccessToken = jwt.sign(
+                        {
+                            id: candidate.id,
+                            login: candidate.login,
+                        },
+                        accessKey,
+                        { expiresIn: 10 * 60 }
+                    );
+                    const newRefreshToken = jwt.sign(
+                        {
+                            id: candidate.id,
+                            login: candidate.login,
+                        },
+                        refreshKey,
+                        { expiresIn: 24 * 60 * 60 }
+                    );
+
+                    res.cookie("accessToken", newAccessToken, {
+                        httpOnly: true,
+                        sameSite: "strict",
+                    });
+
+                    res.cookie("refreshToken", newRefreshToken, {
+                        httpOnly: true,
+                        sameSite: "strict",
+                        path: "/refresh-token",
+                    });
+                    res.cookie("refreshToken", newRefreshToken, {
+                        httpOnly: true,
+                        sameSite: "strict",
+                        path: "/logout",
+                    });
+                    res.redirect("/resource");
+                }
+            });
+        } else res.send("Refresh token is blocked");
+    } else res.status(401).send("To access the resource, you need to log in");
+});
 
 
 
