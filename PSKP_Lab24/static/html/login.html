@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./bootstrap.css" type="text/css" />
+    <title>PSKP-24</title>
+</head>
+
+<body>
+    <div class="container d-flex align-items-center justify-content-center">
+
+        <form action="/login" method="POST">
+            <label>
+                Login
+                <input class="form-control mb-2" type="text" name="username" required />
+            </label>
+            <br />
+
+            <label>
+                Password
+                <input class="form-control" type="password" name="password" required />
+            </label>
+            <br />
+
+            <button class="btn btn-primary" type="submit">
+                Sign In
+            </button>
+            <button type="reset" class="cancelbtn">Cancel</button>
+        </form>
+
+    </div>
+</body>
+
+</html>

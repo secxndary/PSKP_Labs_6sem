@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form action="/register" method="POST">
+    <label>
+        Username
+        <input type="text" placeholder="Enter new Username" name="username" required/>
+    </label><br/>
+    <label>
+        Email
+        <input type="text" placeholder="Enter new Email" name="email" required/>
+    </label><br/>
+    <label>
+        Password
+        <input type="password" placeholder="Enter new Password" name="password" required/>
+    </label><br/>
+    <label>
+        Role: admin, user, guest
+        <input type="text" placeholder="Enter new Role" name="role" required/>
+    </label><br/>
+
+    <button type="submit">Register</button>
+    <button type="reset" class="cancelbtn">Cancel</button>
+</form>
+</body>
+</html>
