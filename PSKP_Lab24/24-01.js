@@ -7,21 +7,21 @@ import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 import { PrismaClient } from '@prisma/client'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-const prisma = new PrismaClient()
-const app = express()
+const prisma = new PrismaClient();
+const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(session({ secret: 'secret', resave: false, saveUninitialized: false }))
-app.use(express.urlencoded({ extended: true }))
-app.use(passport.initialize())
-app.use(passport.session())
+app.use(session({ secret: 'secret', resave: false, saveUninitialized: false }));
+app.use(express.urlencoded({ extended: true }));
+app.use(passport.initialize());
+app.use(passport.session());
 
-passport.serializeUser(function (user, done) { done(null, user) })
-passport.deserializeUser(function (user, done) { done(null, user) })
-dotenv.config()
+passport.serializeUser(function (user, done) { done(null, user); });
+passport.deserializeUser(function (user, done) { done(null, user); });
+dotenv.config();
 
 passport.use(
     new Strategy(
@@ -41,24 +41,23 @@ passport.use(
                         id: profile.id,
                         username: profile.username,
                     },
-                })
-
-                done(null, user)
+                });
+                done(null, user);
             } catch (e) {
-                return done(e, null)
+                return done(e, null);
             }
         }
     )
 )
 
 app.get('/login', function (req, res) {
-    res.sendFile(join(__dirname, './views/login.html'))
+    res.sendFile(join(__dirname, './views/login.html'));
 })
 
 app.get(
     '/auth/github',
     passport.authenticate('github', { scope: ['user:email'] })
-)
+);
 
 app.get(
     '/auth/github/callback',
@@ -66,20 +65,18 @@ app.get(
         failureRedirect: '/login',
         successRedirect: '/resource',
     })
-)
+);
 
 app.get('/logout', function (req, res) {
     req.logout(function () {
         res.redirect('/login')
     })
-})
+});
 
 app.get('/resource', function (req, res) {
-    if (req.isAuthenticated()) {
-        return res.send(`<h2>Welcome to the resource, ${req.user.username}!</h2>`)
-    }
-
-    res.status(401).end('unauthorized')
-})
+    if (req.isAuthenticated())
+        return res.send(`<h2>Welcome to the resource, ${req.user.username}!</h2>`);
+    return res.status(401).end('[ERROR] 401: Unauthorized.');
+});
 
 app.listen(PORT, () => console.log(`[OK] Server running at localhost:${PORT}/\n`));
