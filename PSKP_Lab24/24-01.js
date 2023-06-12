@@ -35,12 +35,15 @@ passport.use(
             try {
                 const user = await prisma.user.upsert({
                     where: {
-                        id: profile.id,
+                        id: +profile.id,
                     },
                     update: {},
                     create: {
-                        id: profile.id,
+                        // id: +profile.id,
                         username: profile.username,
+                        email: profile.email,
+                        role: profile.role,
+                        rt: refreshToken
                     },
                 });
                 done(null, user);
