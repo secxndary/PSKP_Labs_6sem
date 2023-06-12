@@ -1,63 +1,85 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const jwt = require('jsonwebtoken');
-const { Ability, AbilityBuilder } = require('casl');
-const cookieParser = require('cookie-parser');
-const authRouter = require('./routers/authRouter');
-const apiRouter = require('./routers/index');
-const sequelize = require('./db');
+import express from 'express'
+import session from 'express-session'
+import passport from 'passport'
+import dotenv from 'dotenv'
+import { Strategy } from 'passport-github2'
+import { dirname, join } from 'path'
+import { fileURLToPath } from 'url'
+import { PrismaClient } from '@prisma/client'
 
-const accessKey = 'kir';
-const app = express();
-const PORT = 5000;
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
-app.use(express.static(__dirname + '/static'));
-app.use(cookieParser('kir'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use((request, response, next) => {
-    const { rules, can } = AbilityBuilder.extract();
-    if (request.cookies.accessToken) {
-        jwt.verify(request.cookies.accessToken, accessKey, (err, payload) => {
-            if (err) {
-                next();
-            } else if (payload) {
-                request.payload = payload;
-                if (request.payload.role === 'admin') {
-                    can(['read', 'update'], ['Repos', 'Commits'], {
-                        authorId: request.payload.id,
-                    });
-                    can('read', 'UsersCASL', { id: request.payload.id });
-                    can('manages', 'all');
-                    can('manage', 'all');
-                }
-                if (request.payload.role === 'user') {
-                    can(['read', 'createU', 'update'], ['Repos', 'Commits'], {
-                        authorId: request.payload.id,
-                    });
-                    can('read', 'UsersCASL', { id: request.payload.id });
-                    can('manages', 'all');
-                }
+const prisma = new PrismaClient()
+const app = express()
+const PORT = process.env.PORT || 5000;
+
+app.use(session({ secret: 'secret', resave: false, saveUninitialized: false }))
+app.use(express.urlencoded({ extended: true }))
+app.use(passport.initialize())
+app.use(passport.session())
+
+passport.serializeUser(function (user, done) { done(null, user) })
+passport.deserializeUser(function (user, done) { done(null, user) })
+dotenv.config()
+
+passport.use(
+    new Strategy(
+        {
+            clientID: process.env.CLIENT_ID,
+            clientSecret: process.env.CLIENT_SECRET,
+            callbackURL: 'http://127.0.0.1:5000/auth/github/callback',
+        },
+        async function (accessToken, refreshToken, profile, done) {
+            try {
+                const user = await prisma.user.upsert({
+                    where: {
+                        id: profile.id,
+                    },
+                    update: {},
+                    create: {
+                        id: profile.id,
+                        username: profile.username,
+                    },
+                })
+
+                done(null, user)
+            } catch (e) {
+                return done(e, null)
             }
-        });
-    } else {
-        request.payload = { id: 0 };
-        can('read', ['Repos', 'Commits'], 'all');
-    }
-    request.ability = new Ability(rules);
-    next();
-});
+        }
+    )
+)
 
-app.use('/', authRouter);
-app.use('/api', apiRouter);
+app.get('/login', function (req, res) {
+    res.sendFile(join(__dirname, './views/login.html'))
+})
 
-app.use((request, response, next) => {
-    response.status(405).send('Incorrect Method or URL');
-});
+app.get(
+    '/auth/github',
+    passport.authenticate('github', { scope: ['user:email'] })
+)
 
-sequelize
-    .sync({ force: false })
-    .then(() => {
-        app.listen(process.env.PORT || PORT, () => console.log(`[OK] Server running at localhost:${PORT}/\n`));
+app.get(
+    '/auth/github/callback',
+    passport.authenticate('github', {
+        failureRedirect: '/login',
+        successRedirect: '/resource',
     })
-    .catch((error) => console.log(error));
+)
+
+app.get('/logout', function (req, res) {
+    req.logout(function () {
+        res.redirect('/login')
+    })
+})
+
+app.get('/resource', function (req, res) {
+    if (req.isAuthenticated()) {
+        return res.send(`<h2>Welcome to the resource, ${req.user.username}!</h2>`)
+    }
+
+    res.status(401).end('unauthorized')
+})
+
+app.listen(PORT, () => console.log(`[OK] Server running at localhost:${PORT}/\n`));
