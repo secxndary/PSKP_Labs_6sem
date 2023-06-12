@@ -23,6 +23,7 @@ passport.serializeUser(function (user, done) { done(null, user); });
 passport.deserializeUser(function (user, done) { done(null, user); });
 dotenv.config();
 
+
 passport.use(
     new Strategy(
         {
@@ -50,14 +51,17 @@ passport.use(
     )
 )
 
+
 app.get('/login', function (req, res) {
     res.sendFile(join(__dirname, './views/login.html'));
 })
+
 
 app.get(
     '/auth/github',
     passport.authenticate('github', { scope: ['user:email'] })
 );
+
 
 app.get(
     '/auth/github/callback',
@@ -67,16 +71,19 @@ app.get(
     })
 );
 
+
 app.get('/logout', function (req, res) {
     req.logout(function () {
         res.redirect('/login')
     })
 });
 
+
 app.get('/resource', function (req, res) {
     if (req.isAuthenticated())
         return res.send(`<h2>Welcome to the resource, ${req.user.username}!</h2>`);
     return res.status(401).end('[ERROR] 401: Unauthorized.');
 });
+
 
 app.listen(PORT, () => console.log(`[OK] Server running at localhost:${PORT}/\n`));
