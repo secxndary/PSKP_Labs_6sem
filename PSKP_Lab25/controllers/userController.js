@@ -13,6 +13,7 @@ class UserController {
         }
     }
 
+
     async getOneUser(req, res) {
         try {
             req.ability.throwUnlessCan(
@@ -28,7 +29,7 @@ class UserController {
             if (user) {
                 res.status(200).json(user);
             } else {
-                res.status(404).send('User is not found');
+                res.status(404).send('[ERROR] 404: User is not found');
             }
         } catch (err) {
             res.status(500).send(err.message);

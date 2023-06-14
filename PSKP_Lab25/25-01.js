@@ -7,13 +7,13 @@ const authRouter = require('./routers/authRouter');
 const apiRouter = require('./routers/index');
 const sequelize = require('./db');
 
-const accessKey = 'kir';
+const accessKey = 'secxndary';
 const app = express();
 const PORT = 5000;
 
 
 app.use(express.static(__dirname + '/static'));
-app.use(cookieParser('kir'));
+app.use(cookieParser('secxndary'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use((req, res, next) => {
@@ -49,12 +49,11 @@ app.use((req, res, next) => {
     next();
 });
 
+
+
 app.use('/', authRouter);
 app.use('/api', apiRouter);
-
-app.use((req, res, next) => {
-    res.status(404).send('<h2>[ERROR] 404: Not Found</h2>');
-});
+app.use((req, res, next) => { res.status(404).send('<h2>[ERROR] 404: Not Found</h2>'); });
 
 
 sequelize

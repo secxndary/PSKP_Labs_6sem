@@ -26,7 +26,7 @@ class ReposController {
             if (repo) {
                 res.status(200).json(repo);
             } else {
-                res.status(404).send('Repo is not found');
+                res.status(404).send('[ERROR] 404: Repo is not found');
             }
         } catch (err) {
             res.status(500).send(err.message);
@@ -70,7 +70,7 @@ class ReposController {
                 );
 
                 res.status(201).send('Repo is updated');
-            } else res.status(404).send('Repo is not found');
+            } else res.status(404).send('[ERROR] 404: Repo is not found');
         } catch (err) {
             res.status(500).send(err.message);
         }
@@ -91,7 +91,7 @@ class ReposController {
                     },
                 });
                 res.status(201).send('Repo is deleted');
-            } else res.status(404).send('Repo is not found');
+            } else res.status(404).send('[ERROR] 404: Repo is not found');
         } catch (err) {
             res.status(500).send(err.message);
         }
@@ -136,7 +136,7 @@ class ReposController {
                 ],
             });
             if (commit) res.status(200).json(commit);
-            else res.status(404).send('Commit is not found');
+            else res.status(404).send('[ERROR] 404: Commit is not found');
         } catch (err) {
             res.status(500).send(err.message);
         }

@@ -1,10 +1,11 @@
 const { UsersCASL } = require('../models');
 const jwt = require('jsonwebtoken');
-const refreshKey = 'kir';
+const refreshKey = 'secxndary';
+const accessKey = 'secxndary';
 let oldRefreshKeyCount = 0;
-const accessKey = 'kir';
-const redis = require('redis');
-const config = require('../config/options.json');
+// const redis = require('redis');
+// const config = require('../config/options.json');
+
 
 class AbilityController {
     getLoginPage(req, res) {
@@ -14,6 +15,7 @@ class AbilityController {
         );
     }
 
+
     getRegisterPage(req, res) {
         res.sendFile(
             __dirname.replace(__dirname.split('\\').pop(), '') +
@@ -21,17 +23,21 @@ class AbilityController {
         );
     }
 
+
     getResoursePage(req, res) {
         if (req.payload && req.payload.id !== 0) {
             res
                 .status(200)
                 .send(
-                    `Resource ${req.payload.id}-${req.payload.username}-${req.payload.role}`
+                    `<h2>Welcome to the resource, ${req.payload.username}!</h2>` + 
+                    `<h3>Your id: ${req.payload.id}</h3>` + 
+                    `<h3>Your role: ${req.payload.role}</h3>`
                 );
         } else {
-            res.status(401).send('Non authorized');
+            res.status(401).send('[ERROR] 401: Unauthorized');
         }
     }
+
 
     refreshToken(req, res) {
         if (req.cookies.refreshToken) {
@@ -89,15 +95,17 @@ class AbilityController {
                 }
             );
         } else {
-            res.status(401).send('Please, authorize');
+            res.status(401).send('[ERROR] 401: Unauthorized');
         }
     }
+
 
     logout(req, res) {
         res.clearCookie('accessToken');
         res.clearCookie('refreshToken');
         res.redirect('/login');
     }
+
 
     async login(req, res) {
         const candidate = await UsersCASL.findOne({
@@ -140,6 +148,7 @@ class AbilityController {
         }
     }
 
+
     async register(req, res) {
         const candidate = await UsersCASL.findOne({
             where: {
@@ -149,6 +158,7 @@ class AbilityController {
         if (candidate) {
             res.redirect('/register');
         } else {
+            console.log('ROLE: ', req.body.role);
             await UsersCASL.create({
                 username: req.body.username,
                 email: req.body.email,
@@ -159,5 +169,6 @@ class AbilityController {
         }
     }
 }
+
 
 module.exports = new AbilityController();

@@ -4,4 +4,5 @@ class AbilityController {
     }
 }
 
+
 module.exports = new AbilityController();
