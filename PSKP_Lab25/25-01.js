@@ -19,26 +19,37 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use((req, res, next) => {
     const { rules, can } = AbilityBuilder.extract();
+    console.log('accessToken:', req.cookies.accessToken);
+
     if (req.cookies.accessToken) {
         jwt.verify(req.cookies.accessToken, accessSecret, (err, payload) => {
             if (err) {
+                console.log('err', err);
                 next();
             } else if (payload) {
                 req.payload = payload;
-                if (req.payload.role === 'admin') {
-                    can(['read', 'update'], ['Repos', 'Commits'], {
-                        authorId: req.payload.id,
-                    });
-                    can('read', 'UsersCASL', { id: req.payload.id });
-                    can('manages', 'all');
-                    can('manage', 'all');
-                }
-                if (req.payload.role === 'user') {
-                    can(['read', 'createU', 'update'], ['Repos', 'Commits'], {
-                        authorId: req.payload.id,
-                    });
-                    can('read', 'UsersCASL', { id: req.payload.id });
-                    can('manages', 'all');
+                console.log('payload:', req.payload, '\n');
+
+                switch (req.payload.role) {
+                    case 'admin':
+                        can(['read', 'update'], ['Repos', 'Commits'], {
+                            authorId: req.payload.id,
+                        });
+                        can('read', 'UsersCASL', { id: req.payload.id });
+                        can('manage', 'all');
+                        break;
+
+                    case 'user':
+                        can(['read', 'create', 'update'], ['Repos', 'Commits'], {
+                            authorId: req.payload.id,
+                        });
+                        can('read', 'UsersCASL', { id: req.payload.id });
+                        break;
+
+                    case 'guest':
+                        can('read', ['Repos', 'Commits']);
+                        break;
+
                 }
             }
         });

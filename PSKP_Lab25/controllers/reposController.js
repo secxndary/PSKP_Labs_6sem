@@ -3,15 +3,15 @@ const { Repos, Commits } = require('../models');
 class ReposController {
     async getAllRepos(req, res) {
         try {
-            req.ability.throwUnlessCan('manages', 'all');
+            req.ability.throwUnlessCan('manage', 'all');
             const repos = await Repos.findAll();
             res.status(200).json(repos);
         } catch (err) {
-            res.status(500).send(err.message);
+            res.status(403).send('[ERROR] 403: You dont have permissions to view all repos, or your token has expired.');
         }
     }
 
-    
+
     async getOneRepo(req, res) {
         try {
             req.ability.throwUnlessCan(
@@ -30,21 +30,24 @@ class ReposController {
                 res.status(404).send('[ERROR] 404: Repo is not found');
             }
         } catch (err) {
-            res.status(500).send(err.message);
+            console.log(err);
+            res.status(403).send('[ERROR] 403: You dont have permissions to view this repo, or your token has expired.');
         }
     }
 
 
     async createRepo(req, res) {
         try {
-            req.ability.throwUnlessCan('createU', 'Repos');
+            req.ability.throwUnlessCan('create', 'Repos');
+            console.log('body: ', req.body);
             const repo = await Repos.create({
                 name: req.body.name,
                 authorId: req.payload.id,
             });
             res.status(201).json(repo);
         } catch (err) {
-            res.status(500).send(err.message);
+            console.log(err);
+            res.status(403).send('[ERROR] 403: You dont have permissions to create repo, or your token has expired.');
         }
     }
 
@@ -75,7 +78,8 @@ class ReposController {
                 res.status(201).send('Repo is updated');
             } else res.status(404).send('[ERROR] 404: Repo is not found');
         } catch (err) {
-            res.status(500).send(err.message);
+            console.log(err);
+            res.status(403).send('[ERROR] 403: You dont have permissions to update this repo, or your token has expired.');
         }
     }
 
@@ -97,7 +101,8 @@ class ReposController {
                 res.status(201).send('Repo is deleted');
             } else res.status(404).send('[ERROR] 404: Repo is not found');
         } catch (err) {
-            res.status(500).send(err.message);
+            console.log(err);
+            res.status(403).send('[ERROR] 403: You dont have permissions to delete this repo, or your token has expired.');
         }
     }
 
@@ -118,6 +123,7 @@ class ReposController {
             });
             res.status(200).json(commits);
         } catch (err) {
+            console.log(err);
             res.status(500).send(err.message);
         }
     }
@@ -144,6 +150,7 @@ class ReposController {
             if (commit) res.status(200).json(commit);
             else res.status(404).send('[ERROR] 404: Commit is not found');
         } catch (err) {
+            console.log(err);
             res.status(500).send(err.message);
         }
     }
@@ -161,6 +168,7 @@ class ReposController {
             });
             res.status(201).send(commit);
         } catch (err) {
+            console.log(err);
             res.status(500).send(err.message);
         }
     }
@@ -194,6 +202,7 @@ class ReposController {
             );
             res.status(200).send('Commit is updated');
         } catch (err) {
+            console.log(err);
             res.status(500).send(err.message);
         }
     }
@@ -219,9 +228,11 @@ class ReposController {
             });
             res.status(200).send('Commit is deleted');
         } catch (err) {
+            console.log(err);
             res.status(500).send(err.message);
         }
     }
 }
+
 
 module.exports = new ReposController();

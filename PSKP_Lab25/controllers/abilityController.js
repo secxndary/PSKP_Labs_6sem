@@ -1,6 +1,6 @@
 class AbilityController {
     async getAllRules(req, res) {
-        res.status(200).send(req.ability.rules);
+        res.status(200).end(JSON.stringify(req.ability.rules, null, 4));
     }
 }
 
