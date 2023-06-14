@@ -1,13 +1,13 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
-const { Ability, AbilityBuilder } = require('casl');
+const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const { Ability, AbilityBuilder } = require('casl');
 const authRouter = require('./routers/authRouter');
 const apiRouter = require('./routers/index');
 const sequelize = require('./db');
 
-const accessKey = 'secxndary';
+const accessSecret = 'secxndary';
 const app = express();
 const PORT = 5000;
 
@@ -16,10 +16,11 @@ app.use(express.static(__dirname + '/static'));
 app.use(cookieParser('secxndary'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
 app.use((req, res, next) => {
     const { rules, can } = AbilityBuilder.extract();
     if (req.cookies.accessToken) {
-        jwt.verify(req.cookies.accessToken, accessKey, (err, payload) => {
+        jwt.verify(req.cookies.accessToken, accessSecret, (err, payload) => {
             if (err) {
                 next();
             } else if (payload) {
