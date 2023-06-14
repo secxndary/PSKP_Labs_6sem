@@ -47,9 +47,11 @@ app.use((req, res, next) => {
                         break;
 
                     case 'guest':
-                        can('read', ['Repos', 'Commits']);
+                        can('read', ['Repos', 'Commits'], {
+                            authorId: req.payload.id,
+                        });
+                        can('read', 'UsersCASL', { id: req.payload.id });
                         break;
-
                 }
             }
         });
@@ -65,7 +67,7 @@ app.use((req, res, next) => {
 
 app.use('/', authRouter);
 app.use('/api', apiRouter);
-app.use((req, res, next) => { res.status(404).send('<h2>[ERROR] 404: Not Found</h2>'); });
+app.use((req, res, next) => { res.status(404).send('<h2>[ERROR] 404: Incorrect URI or method.</h2>'); });
 
 
 sequelize

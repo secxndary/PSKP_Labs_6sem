@@ -30,7 +30,10 @@ class CommitsController {
 
     async getOneCommitByRepo(req, res) {
         try {
-
+            req.ability.throwUnlessCan(
+                'read',
+                await Repos.findByPk(req.params.id)
+            );
             const commit = await Commits.findOne({
                 where: {
                     id: req.params.commitId,
@@ -47,12 +50,12 @@ class CommitsController {
                 ],
             });
             if (commit)
-                return res.status(200).end(JSON.stringify(commits, null, 4));
+                return res.status(200).end(JSON.stringify(commit, null, 4));
             else
-                return res.status(404).send('[ERROR] 404: Commit is not found.');
+                return res.status(404).send('[ERROR] 404: There is no commit with such id.');
         } catch (err) {
             console.log(err);
-            res.status(500).send(err.message);
+            res.status(403).send('[ERROR] 403: You dont have permissions to view this repo, or your token has expired.');
         }
     }
 
@@ -60,7 +63,7 @@ class CommitsController {
     async createCommitByRepo(req, res) {
         try {
             req.ability.throwUnlessCan(
-                'createU',
+                'create',
                 await Repos.findByPk(req.params.id)
             );
             const commit = await Commits.create({
@@ -70,7 +73,7 @@ class CommitsController {
             return res.status(201).end(JSON.stringify(commit, null, 4));
         } catch (err) {
             console.log(err);
-            res.status(500).send(err.message);
+            res.status(403).send('[ERROR] 403: You dont have permissions to create commits in this repo, or your token has expired.');
         }
     }
 
@@ -101,10 +104,13 @@ class CommitsController {
                     ],
                 }
             );
-            res.status(200).send('Commit is updated');
+
+            const commit = await Commits.findOne(
+                { where: { id: req.params.commitId } });
+            return res.status(200).end(JSON.stringify(commit, null, 4));
         } catch (err) {
             console.log(err);
-            res.status(500).send(err.message);
+            res.status(403).send('[ERROR] 403: You dont have permissions to update commits in this repo, or your token has expired.');
         }
     }
 
@@ -112,6 +118,9 @@ class CommitsController {
     async deleteCommitByRepo(req, res) {
         try {
             req.ability.throwUnlessCan('manage', 'all');
+            const commit = await Commits.findOne(
+                { where: { id: req.params.commitId } });
+
             await Commits.destroy({
                 where: {
                     id: req.params.commitId,
@@ -127,10 +136,14 @@ class CommitsController {
                     },
                 ],
             });
-            res.status(200).send('Commit is deleted');
+
+            if (commit)
+                return res.status(200).end(JSON.stringify(commit, null, 4));
+            else
+                return res.status(404).send('[ERROR] 404: There is no commit with such id');
         } catch (err) {
             console.log(err);
-            res.status(500).send(err.message);
+            res.status(403).send('[ERROR] 403: You dont have permissions to delete commits in this repo, or your token has expired.');
         }
     }
 }
