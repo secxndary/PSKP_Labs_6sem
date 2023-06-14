@@ -12,7 +12,7 @@ const app = express();
 const PORT = 5000;
 
 
-app.use(express.static(__dirname + '/static/html'));
+app.use(express.static(__dirname + '/static'));
 app.use(cookieParser('kir'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

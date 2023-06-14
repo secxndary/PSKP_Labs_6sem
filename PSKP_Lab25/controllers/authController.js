@@ -10,14 +10,14 @@ class AbilityController {
     getLoginPage(req, res) {
         res.sendFile(
             __dirname.replace(__dirname.split('\\').pop(), '') +
-            'static/html/login.html'
+            'static/login.html'
         );
     }
 
     getRegisterPage(req, res) {
         res.sendFile(
             __dirname.replace(__dirname.split('\\').pop(), '') +
-            'static/html/register.html'
+            'static/register.html'
         );
     }
 
