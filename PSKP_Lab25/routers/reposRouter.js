@@ -8,12 +8,7 @@ repoRouter
     .get('/:id', reposController.getOneRepo)
     .post('/', reposController.createRepo)
     .put('/:id', reposController.updateRepo)
-    .delete('/:id', reposController.deleteRepo)
-    .get('/:id/commits', reposController.getAllCommitsByRepo)
-    .get('/:id/commits/:commitId', reposController.getOneCommitByRepo)
-    .post('/:id/commits', reposController.createCommitByRepo)
-    .put('/:id/commits/:commitId', reposController.updateCommitByRepo)
-    .delete('/:id/commits/:commitId', reposController.deleteCommitByRepo);
-
+    .delete('/:id', reposController.deleteRepo);
+   
 
 module.exports = repoRouter;
