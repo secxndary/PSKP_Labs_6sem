@@ -11,53 +11,55 @@ const accessKey = 'kir';
 const app = express();
 const PORT = 5000;
 
-app.use(express.static(__dirname + '/static'));
+
+app.use(express.static(__dirname + '/static/html'));
 app.use(cookieParser('kir'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use((request, response, next) => {
+app.use((req, res, next) => {
     const { rules, can } = AbilityBuilder.extract();
-    if (request.cookies.accessToken) {
-        jwt.verify(request.cookies.accessToken, accessKey, (err, payload) => {
+    if (req.cookies.accessToken) {
+        jwt.verify(req.cookies.accessToken, accessKey, (err, payload) => {
             if (err) {
                 next();
             } else if (payload) {
-                request.payload = payload;
-                if (request.payload.role === 'admin') {
+                req.payload = payload;
+                if (req.payload.role === 'admin') {
                     can(['read', 'update'], ['Repos', 'Commits'], {
-                        authorId: request.payload.id,
+                        authorId: req.payload.id,
                     });
-                    can('read', 'UsersCASL', { id: request.payload.id });
+                    can('read', 'UsersCASL', { id: req.payload.id });
                     can('manages', 'all');
                     can('manage', 'all');
                 }
-                if (request.payload.role === 'user') {
+                if (req.payload.role === 'user') {
                     can(['read', 'createU', 'update'], ['Repos', 'Commits'], {
-                        authorId: request.payload.id,
+                        authorId: req.payload.id,
                     });
-                    can('read', 'UsersCASL', { id: request.payload.id });
+                    can('read', 'UsersCASL', { id: req.payload.id });
                     can('manages', 'all');
                 }
             }
         });
     } else {
-        request.payload = { id: 0 };
+        req.payload = { id: 0 };
         can('read', ['Repos', 'Commits'], 'all');
     }
-    request.ability = new Ability(rules);
+    req.ability = new Ability(rules);
     next();
 });
 
 app.use('/', authRouter);
 app.use('/api', apiRouter);
 
-app.use((request, response, next) => {
-    response.status(405).send('Incorrect Method or URL');
+app.use((req, res, next) => {
+    res.status(404).send('<h2>[ERROR] 404: Not Found</h2>');
 });
+
 
 sequelize
     .sync({ force: false })
     .then(() => {
         app.listen(process.env.PORT || PORT, () => console.log(`[OK] Server running at localhost:${PORT}/\n`));
     })
-    .catch((error) => console.log(error));
+    .catch(err => console.log(err));

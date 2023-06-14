@@ -1,103 +1,103 @@
 const { Repos, Commits } = require('../models');
 
 class ReposController {
-    async getAllRepos(request, response) {
+    async getAllRepos(req, res) {
         try {
-            request.ability.throwUnlessCan('manages', 'all');
+            req.ability.throwUnlessCan('manages', 'all');
             const repos = await Repos.findAll();
-            response.status(200).json(repos);
+            res.status(200).json(repos);
         } catch (err) {
-            response.status(500).send(err.message);
+            res.status(500).send(err.message);
         }
     }
 
-    async getOneRepo(request, response) {
+    async getOneRepo(req, res) {
         try {
-            request.ability.throwUnlessCan(
+            req.ability.throwUnlessCan(
                 'read',
-                await Repos.findByPk(request.params.id)
+                await Repos.findByPk(req.params.id)
             );
             const repo = await Repos.findOne({
                 where: {
-                    id: request.params.id,
+                    id: req.params.id,
                 },
             });
 
             if (repo) {
-                response.status(200).json(repo);
+                res.status(200).json(repo);
             } else {
-                response.status(404).send('Repo is not found');
+                res.status(404).send('Repo is not found');
             }
         } catch (err) {
-            response.status(500).send(err.message);
+            res.status(500).send(err.message);
         }
     }
 
-    async createRepo(request, response) {
+    async createRepo(req, res) {
         try {
-            request.ability.throwUnlessCan('createU', 'Repos');
+            req.ability.throwUnlessCan('createU', 'Repos');
             const repo = await Repos.create({
-                name: request.body.name,
-                authorId: request.payload.id,
+                name: req.body.name,
+                authorId: req.payload.id,
             });
-            response.status(201).json(repo);
+            res.status(201).json(repo);
         } catch (err) {
-            response.status(500).send(err.message);
+            res.status(500).send(err.message);
         }
     }
 
-    async updateRepo(request, response) {
+    async updateRepo(req, res) {
         try {
-            request.ability.throwUnlessCan(
+            req.ability.throwUnlessCan(
                 'update',
-                await Repos.findByPk(request.params.id)
+                await Repos.findByPk(req.params.id)
             );
             const repo = await Repos.findOne({
                 where: {
-                    id: request.params.id,
+                    id: req.params.id,
                 },
             });
             if (repo) {
                 await Repos.update(
                     {
-                        name: request.body.name,
+                        name: req.body.name,
                     },
                     {
                         where: {
-                            id: request.params.id,
+                            id: req.params.id,
                         },
                     }
                 );
 
-                response.status(201).send('Repo is updated');
-            } else response.status(404).send('Repo is not found');
+                res.status(201).send('Repo is updated');
+            } else res.status(404).send('Repo is not found');
         } catch (err) {
-            response.status(500).send(err.message);
+            res.status(500).send(err.message);
         }
     }
 
-    async deleteRepo(request, response) {
+    async deleteRepo(req, res) {
         try {
-            request.ability.throwUnlessCan('manage', 'all');
+            req.ability.throwUnlessCan('manage', 'all');
             const repo = await Repos.findOne({
                 where: {
-                    id: request.params.id,
+                    id: req.params.id,
                 },
             });
             if (repo) {
                 await Repos.destroy({
                     where: {
-                        id: request.params.id,
+                        id: req.params.id,
                     },
                 });
-                response.status(201).send('Repo is deleted');
-            } else response.status(404).send('Repo is not found');
+                res.status(201).send('Repo is deleted');
+            } else res.status(404).send('Repo is not found');
         } catch (err) {
-            response.status(500).send(err.message);
+            res.status(500).send(err.message);
         }
     }
 
-    async getAllCommitsByRepo(request, response) {
+    async getAllCommitsByRepo(req, res) {
         try {
             const commits = await Commits.findAll({
                 include: [
@@ -105,112 +105,112 @@ class ReposController {
                         model: Repos,
                         required: true,
                         where: {
-                            id: request.params.id,
+                            id: req.params.id,
                         },
                         attributes: [],
                     },
                 ],
             });
-            response.status(200).json(commits);
+            res.status(200).json(commits);
         } catch (err) {
-            response.status(500).send(err.message);
+            res.status(500).send(err.message);
         }
     }
 
-    async getOneCommitByRepo(request, response) {
+    async getOneCommitByRepo(req, res) {
         try {
 
             const commit = await Commits.findOne({
                 where: {
-                    id: request.params.commitId,
+                    id: req.params.commitId,
                 },
                 include: [
                     {
                         model: Repos,
                         required: true,
                         where: {
-                            id: request.params.id,
+                            id: req.params.id,
                         },
                         attributes: [],
                     },
                 ],
             });
-            if (commit) response.status(200).json(commit);
-            else response.status(404).send('Commit is not found');
+            if (commit) res.status(200).json(commit);
+            else res.status(404).send('Commit is not found');
         } catch (err) {
-            response.status(500).send(err.message);
+            res.status(500).send(err.message);
         }
     }
 
-    async createCommitByRepo(request, response) {
+    async createCommitByRepo(req, res) {
         try {
-            request.ability.throwUnlessCan(
+            req.ability.throwUnlessCan(
                 'createU',
-                await Repos.findByPk(request.params.id)
+                await Repos.findByPk(req.params.id)
             );
             const commit = await Commits.create({
-                message: request.body.message,
-                repoId: request.params.id,
+                message: req.body.message,
+                repoId: req.params.id,
             });
-            response.status(201).send(commit);
+            res.status(201).send(commit);
         } catch (err) {
-            response.status(500).send(err.message);
+            res.status(500).send(err.message);
         }
     }
 
-    async updateCommitByRepo(request, response) {
+    async updateCommitByRepo(req, res) {
         try {
-            request.ability.throwUnlessCan(
+            req.ability.throwUnlessCan(
                 'update',
-                await Repos.findByPk(request.params.id)
+                await Repos.findByPk(req.params.id)
             );
             await Commits.update(
                 {
-                    message: request.body.message,
+                    message: req.body.message,
                 },
                 {
                     where: {
-                        id: request.params.commitId,
+                        id: req.params.commitId,
                     },
                     include: [
                         {
                             model: Repos,
                             required: true,
                             where: {
-                                id: request.params.id,
+                                id: req.params.id,
                             },
                             attributes: [],
                         },
                     ],
                 }
             );
-            response.status(200).send('Commit is updated');
+            res.status(200).send('Commit is updated');
         } catch (err) {
-            response.status(500).send(err.message);
+            res.status(500).send(err.message);
         }
     }
 
-    async deleteCommitByRepo(request, response) {
+    async deleteCommitByRepo(req, res) {
         try {
-            request.ability.throwUnlessCan('manage', 'all');
+            req.ability.throwUnlessCan('manage', 'all');
             await Commits.destroy({
                 where: {
-                    id: request.params.commitId,
+                    id: req.params.commitId,
                 },
                 include: [
                     {
                         model: Repos,
                         required: true,
                         where: {
-                            id: request.params.id,
+                            id: req.params.id,
                         },
                         attributes: [],
                     },
                 ],
             });
-            response.status(200).send('Commit is deleted');
+            res.status(200).send('Commit is deleted');
         } catch (err) {
-            response.status(500).send(err.message);
+            res.status(500).send(err.message);
         }
     }
 }

@@ -7,36 +7,36 @@ const redis = require('redis');
 const config = require('../config/options.json');
 
 class AbilityController {
-    getLoginPage(request, response) {
-        response.sendFile(
+    getLoginPage(req, res) {
+        res.sendFile(
             __dirname.replace(__dirname.split('\\').pop(), '') +
             'static/html/login.html'
         );
     }
 
-    getRegisterPage(request, response) {
-        response.sendFile(
+    getRegisterPage(req, res) {
+        res.sendFile(
             __dirname.replace(__dirname.split('\\').pop(), '') +
             'static/html/register.html'
         );
     }
 
-    getResoursePage(request, response) {
-        if (request.payload && request.payload.id !== 0) {
-            response
+    getResoursePage(req, res) {
+        if (req.payload && req.payload.id !== 0) {
+            res
                 .status(200)
                 .send(
-                    `Resource ${request.payload.id}-${request.payload.username}-${request.payload.role}`
+                    `Resource ${req.payload.id}-${req.payload.username}-${req.payload.role}`
                 );
         } else {
-            response.status(401).send('Non authorized');
+            res.status(401).send('Non authorized');
         }
     }
 
-    refreshToken(request, response) {
-        if (request.cookies.refreshToken) {
+    refreshToken(req, res) {
+        if (req.cookies.refreshToken) {
             jwt.verify(
-                request.cookies.refreshToken,
+                req.cookies.refreshToken,
                 refreshKey,
                 async (err, payload) => {
                     if (err) {
@@ -46,7 +46,7 @@ class AbilityController {
                         client.on('error', (err) => console.log(`error: ${err}`));
                         client.on('connect', () => console.log('connect'));
                         client.on('end', () => console.log('end'));
-                        client.set(oldRefreshKeyCount, request.cookies.refreshToken, () =>
+                        client.set(oldRefreshKeyCount, req.cookies.refreshToken, () =>
                             console.log('set old refresh token')
                         );
                         client.get(oldRefreshKeyCount, (err, result) =>
@@ -77,33 +77,33 @@ class AbilityController {
                             refreshKey,
                             { expiresIn: 24 * 60 * 60 }
                         );
-                        response.cookie('accessToken', newAccessToken, {
+                        res.cookie('accessToken', newAccessToken, {
                             httpOnly: true,
                             sameSite: 'strict',
                         });
-                        response.cookie('refreshToken', newRefreshToken, {
+                        res.cookie('refreshToken', newRefreshToken, {
                             path: '/refresh-token',
                         });
-                        response.redirect('/resource');
+                        res.redirect('/resource');
                     }
                 }
             );
         } else {
-            response.status(401).send('Please, authorize');
+            res.status(401).send('Please, authorize');
         }
     }
 
-    logout(request, response) {
-        response.clearCookie('accessToken');
-        response.clearCookie('refreshToken');
-        response.redirect('/login');
+    logout(req, res) {
+        res.clearCookie('accessToken');
+        res.clearCookie('refreshToken');
+        res.redirect('/login');
     }
 
-    async login(request, response) {
+    async login(req, res) {
         const candidate = await UsersCASL.findOne({
             where: {
-                username: request.body.username,
-                password: request.body.password,
+                username: req.body.username,
+                password: req.body.password,
             },
         });
         if (candidate) {
@@ -126,36 +126,36 @@ class AbilityController {
                 refreshKey,
                 { expiresIn: 24 * 60 * 60 }
             );
-            response.cookie('accessToken', accessToken, {
+            res.cookie('accessToken', accessToken, {
                 httpOnly: true,
                 sameSite: 'strict',
             });
-            response.cookie('refreshToken', refreshToken, {
+            res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 sameSite: 'strict',
             });
-            response.redirect('/resource');
+            res.redirect('/resource');
         } else {
-            response.redirect('/login');
+            res.redirect('/login');
         }
     }
 
-    async register(request, response) {
+    async register(req, res) {
         const candidate = await UsersCASL.findOne({
             where: {
-                username: request.body.username,
+                username: req.body.username,
             },
         });
         if (candidate) {
-            response.redirect('/register');
+            res.redirect('/register');
         } else {
             await UsersCASL.create({
-                username: request.body.username,
-                email: request.body.email,
-                password: request.body.password,
-                role: request.body.role,
+                username: req.body.username,
+                email: req.body.email,
+                password: req.body.password,
+                role: req.body.role,
             });
-            response.redirect('/login');
+            res.redirect('/login');
         }
     }
 }

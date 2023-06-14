@@ -1,37 +1,37 @@
 const { UsersCASL } = require('../models');
 
 class UserController {
-    async getAllUsers(request, response) {
+    async getAllUsers(req, res) {
         try {
-            request.ability.throwUnlessCan('manage', 'all');
+            req.ability.throwUnlessCan('manage', 'all');
             const users = await UsersCASL.findAll({
                 attributes: ['id', 'username', 'email', 'role'],
             });
-            response.status(200).json(users);
+            res.status(200).json(users);
         } catch (err) {
-            response.status(500).send(err.message);
+            res.status(500).send(err.message);
         }
     }
 
-    async getOneUser(request, response) {
+    async getOneUser(req, res) {
         try {
-            request.ability.throwUnlessCan(
+            req.ability.throwUnlessCan(
                 'read',
-                new UsersCASL({ id: Number(request.params.id) })
+                new UsersCASL({ id: Number(req.params.id) })
             );
             const user = await UsersCASL.findOne({
                 where: {
-                    id: request.params.id,
+                    id: req.params.id,
                 },
                 attributes: ['id', 'username', 'email', 'role'],
             });
             if (user) {
-                response.status(200).json(user);
+                res.status(200).json(user);
             } else {
-                response.status(404).send('User is not found');
+                res.status(404).send('User is not found');
             }
         } catch (err) {
-            response.status(500).send(err.message);
+            res.status(500).send(err.message);
         }
     }
 }
