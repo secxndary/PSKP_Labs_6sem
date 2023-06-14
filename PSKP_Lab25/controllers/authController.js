@@ -31,7 +31,8 @@ class AbilityController {
                 .send(
                     `<h2>Welcome to the resource, ${req.payload.username}!</h2>` + 
                     `<h3>Your id: ${req.payload.id}</h3>` + 
-                    `<h3>Your role: ${req.payload.role}</h3>`
+                    `<h3>Your role: ${req.payload.role}</h3>` + 
+                    `<a href="http://localhost:5000/logout">Log Out</a>`
                 );
         } else {
             res.status(401).send('[ERROR] 401: Unauthorized');

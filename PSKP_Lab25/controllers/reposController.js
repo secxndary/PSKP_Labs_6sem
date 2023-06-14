@@ -11,6 +11,7 @@ class ReposController {
         }
     }
 
+    
     async getOneRepo(req, res) {
         try {
             req.ability.throwUnlessCan(
@@ -33,6 +34,7 @@ class ReposController {
         }
     }
 
+
     async createRepo(req, res) {
         try {
             req.ability.throwUnlessCan('createU', 'Repos');
@@ -45,6 +47,7 @@ class ReposController {
             res.status(500).send(err.message);
         }
     }
+
 
     async updateRepo(req, res) {
         try {
@@ -76,6 +79,7 @@ class ReposController {
         }
     }
 
+
     async deleteRepo(req, res) {
         try {
             req.ability.throwUnlessCan('manage', 'all');
@@ -97,6 +101,7 @@ class ReposController {
         }
     }
 
+
     async getAllCommitsByRepo(req, res) {
         try {
             const commits = await Commits.findAll({
@@ -116,6 +121,7 @@ class ReposController {
             res.status(500).send(err.message);
         }
     }
+
 
     async getOneCommitByRepo(req, res) {
         try {
@@ -142,6 +148,7 @@ class ReposController {
         }
     }
 
+
     async createCommitByRepo(req, res) {
         try {
             req.ability.throwUnlessCan(
@@ -157,6 +164,7 @@ class ReposController {
             res.status(500).send(err.message);
         }
     }
+
 
     async updateCommitByRepo(req, res) {
         try {
@@ -189,6 +197,7 @@ class ReposController {
             res.status(500).send(err.message);
         }
     }
+
 
     async deleteCommitByRepo(req, res) {
         try {
