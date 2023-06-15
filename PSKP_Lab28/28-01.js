@@ -13,7 +13,7 @@ import('webdav')
         const Error404 = (res, message) => res.status(404).send(`[ERROR] 404: ${message}`);
 
         const client = createClient('https://webdav.yandex.ru', {
-            username: process.env.USERNAME,
+            username: process.env.USERNAME,   // имя пользователя в yandex (username@yandex.ru)
             password: process.env.PASSWORD,   // пароль приложения (https://id.yandex.ru/security/app-passwords)
         });
 
