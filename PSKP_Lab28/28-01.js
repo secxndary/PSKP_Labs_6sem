@@ -7,14 +7,14 @@ const PORT = 5000;
 
 import('webdav')
     .then(webdav => {
-        const { createClient } = webdav;
+        const { createClient, AuthType } = webdav;
 
-        const Error408 = (res, message) => res.status(408).send(`[ERROR] 408: ${message}.`);
-        const Error404 = (res, message) => res.status(404).send(`[ERROR] 404: ${message}.`);
+        const Error408 = (res, message) => res.status(408).send(`[ERROR] 408: ${message}`);
+        const Error404 = (res, message) => res.status(404).send(`[ERROR] 404: ${message}`);
 
         const client = createClient('https://webdav.yandex.ru', {
-            username: 'secxndary',
-            password: 'bcmbjgeqmffogwsn',   // пароль приложения (https://id.yandex.ru/security/app-passwords)
+            username: process.env.USERNAME,
+            password: process.env.PASSWORD,   // пароль приложения (https://id.yandex.ru/security/app-passwords)
         });
 
 
@@ -27,7 +27,7 @@ import('webdav')
                     res.status(200).send('[OK] Directory succesfully created.');
                 }
                 else
-                    Error408(res, `Failed to create folder with name = ${req.params.name}`);
+                    Error408(res, `Failed to create folder with name = ${req.params.name}.`);
             });
         });
 
@@ -37,10 +37,10 @@ import('webdav')
             client.exists(nameFile).then(result => {
                 if (result) {
                     client.deleteFile(nameFile);
-                    res.status(200).send('directory del');
+                    res.status(200).send('[OK] Directory succesfully deleted.');
                 }
                 else
-                    Error404(res);
+                    Error404(res, `There is no directory with name = ${req.params.name}.`);
             });
         });
 
@@ -50,17 +50,17 @@ import('webdav')
                 const filePath = req.params.name;
 
                 if (!fs.existsSync(filePath)) {
-                    Error404(res);
+                    Error404(res, `There is no file with name = ${req.params.name}.`);
                     return;
                 }
 
                 let rs = fs.createReadStream(filePath);
                 let ws = client.createWriteStream(req.params.name);
                 rs.pipe(ws);
-                res.status(200).send('File good');
+                res.status(200).send('[OK] File uploaded successfully.');
             }
             catch (err) {
-                Error408(res);
+                Error408(res, `Cannot upload file: ${err.message}.`);
             }
         });
 
@@ -72,17 +72,15 @@ import('webdav')
                 .then(alreadyExists => {
                     if (alreadyExists) {
                         let rs = client.createReadStream(filePath);
-                        let ws = fs.createWriteStream(Date.now() + req.params.name
-                        );
+                        let ws = fs.createWriteStream(Date.now() + req.params.name);
                         rs.pipe(ws);
                         rs.pipe(res);
                     }
-                    else {
-                        Error404(res);
-                    }
+                    else
+                        Error404(res, `There is no file with name = ${req.params.name}.`);
                 })
                 .then(message => (message ? res.json(message) : null))
-                .catch(() => { Error404(res); });
+                .catch(err => { Error404(res, err.message); });
         });
 
 
@@ -91,10 +89,10 @@ import('webdav')
             client.exists(nameFile).then(result => {
                 if (result) {
                     client.deleteFile(nameFile);
-                    res.status(200).send('file del');
+                    res.status(200).send('[OK] File deleted successfully.');
                 }
                 else
-                    Error404(res);
+                    Error404(res, `There is no file with name = ${req.params.name}.`);
             });
         });
 
@@ -107,12 +105,12 @@ import('webdav')
                 .then(result => {
                     if (result) {
                         client.copyFile(nameFrom, nameTo);
-                        res.status(200).send('file copy');
+                        res.status(200).send('[OK] File copied successfully.');
                     }
                     else
-                        Error404(res);
+                        Error404(res, `There is no file with name = ${req.params.from}.`);
                 })
-                .catch(() => Error408(res));
+                .catch(err => Error408(res, err.message));
         });
 
 
@@ -124,12 +122,12 @@ import('webdav')
                 .then(result => {
                     if (result) {
                         client.moveFile(nameFrom, nameTo);
-                        res.status(200).send('file move');
+                        res.status(200).send('[OK] File moved successfully.');
                     }
                     else
-                        Error404(res);
+                        Error404(res, `There is no file with name = ${req.params.from}.`);
                 })
-                .catch(() => Error408(res));
+                .catch(err => Error408(res, err.message));
         });
 
 
