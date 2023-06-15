@@ -11,6 +11,7 @@
     "express-handlebars": "^7.0.4",
     "express-session": "^1.17.3",
     "hbs": "^4.2.0",
+    "jsonrpc-server-http-nats": "^0.1.14",
     "jsonwebtoken": "^9.0.0",
     "passport": "^0.6.0",
     "passport-github2": "^0.1.12",
