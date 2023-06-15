@@ -7,36 +7,40 @@ const PORT = 5000;
 
 import('webdav')
     .then(webdav => {
-        const { createClient, AuthType } = webdav;
+        const { createClient } = webdav;
 
-        const Error408 = res => res.status(408).send('[ERROR] 408: Request Timeout.');
-        const Error404 = res => res.status(404).send('[ERROR] 404: Not found.');
+        const Error408 = (res, message) => res.status(408).send(`[ERROR] 408: ${message}.`);
+        const Error404 = (res, message) => res.status(404).send(`[ERROR] 404: ${message}.`);
 
         const client = createClient('https://webdav.yandex.ru', {
-            username: 'knttrmir',
-            password: 'kgspmoowactredxw',
+            username: 'secxndary',
+            password: 'bcmbjgeqmffogwsn',   // пароль приложения (https://id.yandex.ru/security/app-passwords)
         });
 
 
 
         app.post('/md/:name', (req, res) => {
             const nameFile = `/${req.params.name}`;
-            client.exists(nameFile).then((result) => {
+            client.exists(nameFile).then(result => {
                 if (!result) {
                     client.createDirectory(nameFile);
-                    res.status(200).send('directory  created');
-                } else Error408(res);
+                    res.status(200).send('[OK] Directory succesfully created.');
+                }
+                else
+                    Error408(res, `Failed to create folder with name = ${req.params.name}`);
             });
         });
 
 
         app.post('/rd/:name', (req, res) => {
             const nameFile = `/${req.params.name}`;
-            client.exists(nameFile).then((result) => {
+            client.exists(nameFile).then(result => {
                 if (result) {
                     client.deleteFile(nameFile);
                     res.status(200).send('directory del');
-                } else Error404(res);
+                }
+                else
+                    Error404(res);
             });
         });
 
@@ -46,7 +50,6 @@ import('webdav')
                 const filePath = req.params.name;
 
                 if (!fs.existsSync(filePath)) {
-                    // Файл не существует
                     Error404(res);
                     return;
                 }
@@ -54,9 +57,9 @@ import('webdav')
                 let rs = fs.createReadStream(filePath);
                 let ws = client.createWriteStream(req.params.name);
                 rs.pipe(ws);
-
                 res.status(200).send('File good');
-            } catch (err) {
+            }
+            catch (err) {
                 Error408(res);
             }
         });
@@ -66,29 +69,32 @@ import('webdav')
             const filePath = '/' + req.params.name;
             client
                 .exists(filePath)
-                .then((alreadyExists) => {
+                .then(alreadyExists => {
                     if (alreadyExists) {
                         let rs = client.createReadStream(filePath);
                         let ws = fs.createWriteStream(Date.now() + req.params.name
                         );
                         rs.pipe(ws);
                         rs.pipe(res);
-                    } else {
+                    }
+                    else {
                         Error404(res);
                     }
                 })
-                .then((message) => (message ? res.json(message) : null))
-                .catch((err) => Error404(err));
+                .then(message => (message ? res.json(message) : null))
+                .catch(() => { Error404(res); });
         });
 
 
         app.post('/del/:name', (req, res) => {
             const nameFile = req.params.name;
-            client.exists(nameFile).then((result) => {
+            client.exists(nameFile).then(result => {
                 if (result) {
                     client.deleteFile(nameFile);
                     res.status(200).send('file del');
-                } else Error404(res);
+                }
+                else
+                    Error404(res);
             });
         });
 
@@ -98,15 +104,15 @@ import('webdav')
             const nameTo = `${req.params.to}`;
             client
                 .exists(nameFrom)
-                .then((result) => {
+                .then(result => {
                     if (result) {
                         client.copyFile(nameFrom, nameTo);
-                        res.status(200).send('file copi');
-                    } else Error404(res);
+                        res.status(200).send('file copy');
+                    }
+                    else
+                        Error404(res);
                 })
-                .catch(() => {
-                    Error408(res);
-                });
+                .catch(() => Error408(res));
         });
 
 
@@ -115,15 +121,15 @@ import('webdav')
             const nameTo = req.params.to;
             client
                 .exists(nameFrom)
-                .then((result) => {
+                .then(result => {
                     if (result) {
                         client.moveFile(nameFrom, nameTo);
                         res.status(200).send('file move');
-                    } else Error404(res);
+                    }
+                    else
+                        Error404(res);
                 })
-                .catch(() => {
-                    Error408(res);
-                });
+                .catch(() => Error408(res));
         });
 
 
