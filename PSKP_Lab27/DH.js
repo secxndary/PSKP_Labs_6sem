@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 
+
 function ServerDH(len_a, g) {
     const dh = crypto.createDiffieHellman(len_a, g);
     const p = dh.getPrime();
@@ -12,7 +13,7 @@ function ServerDH(len_a, g) {
             key_hex: k.toString('hex'),
         };
     };
-    this.getSecret = (clientContext) => {
+    this.getSecret = clientContext => {
         const k = Buffer.from(clientContext.key_hex, 'hex');
         return dh.computeSecret(k);
     };
@@ -36,7 +37,7 @@ function ClientDH(serverContext) {
             key_hex: k.toString('hex'),
         };
     };
-    this.getSecret = (clientContext) => {
+    this.getSecret = clientContext => {
         const k = Buffer.from(clientContext.key_hex, 'hex');
         return dh.computeSecret(k);
     };
@@ -51,12 +52,13 @@ function cipherFile(readStream, writeStream, key) {
 }
 
 
-function decipherFile(readStream, writeStream, key, iv, callback) {
+function decipherFile(readStream, writeStream, key, iv) {
     const alg = 'aes-256-cbc';
     const piv = iv ? iv : Buffer.alloc(16, 0);
     const dch = crypto.createDecipheriv(alg, key, piv);
     readStream.pipe(dch).pipe(writeStream);
 }
+
 
 module.exports.ServerDH = ServerDH;
 module.exports.ClientDH = ClientDH;

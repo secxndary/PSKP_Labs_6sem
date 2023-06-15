@@ -1,4 +1,4 @@
-const { Repos, Commits } = require('../models');
+const { Repos } = require('../models');
 
 
 class ReposController {

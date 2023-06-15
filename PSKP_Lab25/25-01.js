@@ -7,7 +7,7 @@ const authRouter = require('./routers/authRouter');
 const apiRouter = require('./routers/index');
 const sequelize = require('./db');
 
-const accessSecret = 'secxndary';
+const accessKey = 'secxndary';
 const app = express();
 const PORT = 5000;
 
@@ -22,7 +22,7 @@ app.use((req, res, next) => {
     console.log('accessToken:', req.cookies.accessToken);
 
     if (req.cookies.accessToken) {
-        jwt.verify(req.cookies.accessToken, accessSecret, (err, payload) => {
+        jwt.verify(req.cookies.accessToken, accessKey, (err, payload) => {
             if (err) {
                 console.log('err', err);
                 next();
@@ -47,7 +47,7 @@ app.use((req, res, next) => {
                         break;
 
                     case 'guest':
-                        can('read', ['Repos', 'Commits'], {
+                        can(['read'], ['Repos', 'Commits'], {
                             authorId: req.payload.id,
                         });
                         can('read', 'UsersCASL', { id: req.payload.id });

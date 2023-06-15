@@ -1,8 +1,8 @@
 const { UsersCASL } = require('../models');
 const jwt = require('jsonwebtoken');
-const refreshSecret = 'secxndary';
-const accessSecret = 'secxndary';
-let oldrefreshSecretCount = 0;
+const refreshKey = 'secxndary';
+const accessKey = 'secxndary';
+let oldrefreshKeyCount = 0;
 
 
 class AbilityController {
@@ -42,7 +42,7 @@ class AbilityController {
         if (req.cookies.refreshToken) {
             jwt.verify(
                 req.cookies.refreshToken,
-                refreshSecret,
+                refreshKey,
                 async (err, payload) => {
                     if (err) {
                         console.log(err.message);
@@ -51,13 +51,13 @@ class AbilityController {
                         client.on('error', (err) => console.log(`error: ${err}`));
                         client.on('connect', () => console.log('connect'));
                         client.on('end', () => console.log('end'));
-                        client.set(oldrefreshSecretCount, req.cookies.refreshToken, () =>
+                        client.set(oldrefreshKeyCount, req.cookies.refreshToken, () =>
                             console.log('set old refresh token')
                         );
-                        client.get(oldrefreshSecretCount, (err, result) =>
+                        client.get(oldrefreshKeyCount, (err, result) =>
                             console.log('added old refresh token:', result)
                         );
-                        oldrefreshSecretCount++;
+                        oldrefreshKeyCount++;
                         client.quit();
                         const candidate = await UsersCASL.findOne({
                             where: {
@@ -70,7 +70,7 @@ class AbilityController {
                                 username: candidate.username,
                                 role: candidate.role,
                             },
-                            accessSecret,
+                            accessKey,
                             { expiresIn: 200 * 60 }
                         );
                         const newRefreshToken = jwt.sign(
@@ -79,7 +79,7 @@ class AbilityController {
                                 username: candidate.username,
                                 role: candidate.role,
                             },
-                            refreshSecret,
+                            refreshKey,
                             { expiresIn: 24 * 60 * 60 }
                         );
                         res.cookie('accessToken', newAccessToken, {
@@ -120,7 +120,7 @@ class AbilityController {
                     username: candidate.username,
                     role: candidate.role,
                 },
-                accessSecret,
+                accessKey,
                 { expiresIn: 10 * 60 }
             );
 
@@ -130,7 +130,7 @@ class AbilityController {
                     username: candidate.username,
                     role: candidate.role,
                 },
-                refreshSecret,
+                refreshKey,
                 { expiresIn: 24 * 60 * 60 }
             );
             res.cookie('accessToken', accessToken, {
