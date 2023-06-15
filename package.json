@@ -21,7 +21,9 @@
     "redis": "^4.6.4",
     "sequelize": "^6.29.3",
     "tedious": "^16.1.0",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "webdav": "^5.1.0",
+    "webdav-server": "^2.6.2"
   },
   "devDependencies": {
     "@prisma/client": "^4.12.0",
