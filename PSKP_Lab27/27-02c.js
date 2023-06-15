@@ -3,18 +3,18 @@ const fs = require('fs');
 const { ClientVerify } = require('./ECP');
 
 let resource_options = {
-    host: 'localhost',
+    host: '127.0.0.1',
     path: '/resource',
     port: 5000,
     method: 'GET',
 };
 
 let options = {
-    host: 'localhost',
+    host: '127.0.0.1',
     path: '/',
     port: 5000,
     method: 'GET',
-    headers: { 'content-type': 'application/json' },
+    // headers: { 'content-type': 'application/json' },
 };
 
 
@@ -29,23 +29,23 @@ setTimeout(() => {
 
             res.on('end', () => {
                 let sign = JSON.parse(data);
-                const x = new ClientVerify(sign);
+                const clientVerify = new ClientVerify(sign);
                 const readStream = fs.createReadStream('./encrypted.txt');
-                x.verify(readStream, (result) => {
+                clientVerify.verify(readStream, result => {
+                    console.log(result);
                     if (result) {
-                        console.log('verify success');
+                        console.log('[OK} Successfully verified signature.\n');
                     } else {
-                        console.log('verify failure');
+                        console.log('[ERROR] Failed to verify signature.\n');
                     }
                 });
             });
         });
 
-        req.on('error', err => { console.log('http.request: error:', err.message); });
+        req.on('error', err => console.log('http.request: error:', err.message));
         req.end();
     });
 
-    request.on('error', err => { console.log('http.request: error:', err.message); });
+    request.on('error', err => console.log('http.request: error:', err.message));
     request.end();
-
 }, 500);

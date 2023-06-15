@@ -1,20 +1,21 @@
 const { ServerSign } = require('./ECP');
 const fs = require('fs');
 const app = require('express')();
+const PORT = 5000;
 
-app.get('/resource', (req, res, next) => {
+
+app.get('/resource', (req, res) => {
     let readStream = fs.createReadStream('./file.txt');
-    res.statusCode = 200;
     readStream.pipe(res);
-    readStream.on('close', () => {
-        res.end();
-    });
+    readStream.on('close', () => res.status(200).end());
 });
 
-app.get('/', (req, res, next) => {
-    const ss = new ServerSign();
+
+app.get('/', (req, res) => {
+    const serverSign = new ServerSign();
     const readStream = fs.createReadStream('./file.txt');
-    ss.getSignContext(readStream, (cb) => {
+    serverSign.getSignContext(readStream, cb => {
+        // console.log(cb);
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify(cb));
     });

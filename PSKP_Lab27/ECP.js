@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 
+
 class ServerSign {
     constructor() {
         const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
@@ -31,6 +32,7 @@ class ClientVerify {
         };
     }
 }
+
 
 
 module.exports.ServerSign = ServerSign;

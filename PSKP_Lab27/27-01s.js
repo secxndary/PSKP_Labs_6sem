@@ -26,8 +26,7 @@ app.get('/resource', (req, res) => {
             res.end();
         });
     } else {
-        res.statusCode = 409;
-        res.end('Set key');
+        res.status(409).end('[ERROR] 409: Conflict.');
     }
 });
 
@@ -48,10 +47,9 @@ app.post('/key', (req, res) => {
             const rs = fs.createReadStream('./file.txt');
             const ws = fs.createWriteStream('./encrypted.txt');
             cipherFile(rs, ws, key);
-            res.end('Success');
+            res.end('[OK] Successfully encrypted.');
         } else {
-            res.statusCode = 409;
-            res.end('Failure');
+            res.status(409).end('[ERROR] 409: Conflict.');
         }
     });
 });
