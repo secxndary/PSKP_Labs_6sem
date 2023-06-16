@@ -7,7 +7,7 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model User {
+model GithubUser {
     id       String @id
     username String
 }

@@ -33,17 +33,14 @@ passport.use(
         },
         async function (accessToken, refreshToken, profile, done) {
             try {
-                const user = await prisma.user.upsert({
+                const user = await prisma.GithubUser.upsert({
                     where: {
-                        id: +profile.id,
+                        id: profile.id,
                     },
                     update: {},
                     create: {
-                        // id: +profile.id,
-                        username: profile.username,
-                        email: profile.email,
-                        role: profile.role,
-                        rt: refreshToken
+                        id: profile.id,
+                        username: profile.username
                     },
                 });
                 done(null, user);
