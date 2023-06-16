@@ -6,46 +6,42 @@ let resource_options = {
     host: '127.0.0.1',
     path: '/resource',
     port: 5000,
-    method: 'GET',
+    method: 'GET'
 };
-
 let options = {
     host: '127.0.0.1',
     path: '/',
     port: 5000,
     method: 'GET',
-    // headers: { 'content-type': 'application/json' },
+    headers: {
+        'content-type': 'application/json'
+    }
 };
 
 
 setTimeout(() => {
-    const request = http.request(resource_options, res => {
-        const file = fs.createWriteStream('./client.txt');
+    const request = http.request(resource_options, (res) => {
+        const file = fs.createWriteStream('./verified_data.txt');
         res.pipe(file);
 
-        const req = http.request(options, res => {
+        const req = http.request(options, (res) => {
             let data = '';
-            res.on('data', chunk => data += chunk.toString());
-
+            res.on('data', (chunk) => { data += chunk.toString('utf-8'); });
+            
             res.on('end', () => {
-                let sign = JSON.parse(data);
-                const clientVerify = new ClientVerify(sign);
-                const readStream = fs.createReadStream('./encrypted.txt');
-                clientVerify.verify(readStream, result => {
-                    console.log(result);
-                    if (result) {
-                        console.log('[OK} Successfully verified signature.\n');
-                    } else {
-                        console.log('[ERROR] Failed to verify signature.\n');
-                    }
+                let signcontext = JSON.parse(data);
+                console.log(signcontext);
+                const cleintVerify = new ClientVerify(signcontext);
+                const rs = fs.createReadStream('./verified_data.txt');
+                cleintVerify.verify(rs, (result) => {
+                    console.log('verified:', result, '\n');
                 });
+
             });
         });
-
-        req.on('error', err => console.log('http.request: error:', err.message));
+        req.on('error', (e) => { console.log('http.request: error:', e.message); });
         req.end();
     });
-
-    request.on('error', err => console.log('http.request: error:', err.message));
+    request.on('error', (e) => { console.log('http.request: error:', e.message); });
     request.end();
 }, 500);
