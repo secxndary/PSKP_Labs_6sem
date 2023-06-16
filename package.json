@@ -13,6 +13,7 @@
     "hbs": "^4.2.0",
     "jsonrpc-server-http-nats": "^0.1.14",
     "jsonwebtoken": "^9.0.0",
+    "node-telegram-bot-api": "^0.61.0",
     "passport": "^0.6.0",
     "passport-github2": "^0.1.12",
     "passport-http": "^0.3.0",
